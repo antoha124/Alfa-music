@@ -1,3 +1,11 @@
+struct TrackDetailContent: Equatable {
+    let track: Track
+    let albumTitle: String
+    let trackIndex: Int
+    let totalTracks: Int
+}
+
+
 enum Status: Equatable {
     case initial
     case loading
