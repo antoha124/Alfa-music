@@ -1,4 +1,5 @@
-# MusicApp — Лабораторная №2
+
+# MusicApp
 
 ## Архитектура
 
@@ -47,3 +48,36 @@
 3. Нажал Next/Previous → ViewModel берёт следующий/предыдущий трек из кэша по `albumId` → рендер нового `content`
 4. Нажал Like → `didTapLike` → меняем `isLiked`
 
+
+## Данные для входа
+
+| Поле     | Значение        |
+|----------|-----------------|
+| Email    | `user@alfa.ru`  |
+| Пароль   | `music123`      |
+
+Также можно нажать **«Войти как гость»** — авторизация пройдёт без ввода данных.
+
+---
+
+## Что происходит при успешном входе
+
+После успешной авторизации открывается экран-заглушка каталога (`CatalogViewController`):
+
+- Отображается приветствие с именем пользователя из сессии.
+- Подпись: «Каталог альбомов (в разработке)».
+
+При неверных данных — под кнопкой появляется красный текст ошибки «Неверный email или пароль».
+
+---
+
+- **Сделан доп**
+ошибки под полями в реальном времени (email-формат, длина пароля)
+
+
+## Скриншоты
+
+![Экран авторизации](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/main.png?raw=true)
+![Ошибка валидации](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/valid.png?raw=true)
+![Экран каталога](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/user.png?raw=true)
+![Экран каталога](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/guest.png?raw=true)

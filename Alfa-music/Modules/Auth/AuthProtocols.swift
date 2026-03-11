@@ -1,9 +1,15 @@
+protocol AuthRepositoryProtocol {
+    func login(request: LoginRequest) throws -> LoginResponse
+}
+
 protocol AuthServiceProtocol {
     func login(_ request: LoginRequest) throws -> UserSession
     func loginAsGuest() throws -> UserSession
 }
 
-
+protocol AuthView: AnyObject {
+    func render(_ state: AuthViewState)
+}
 
 protocol AuthViewModelProtocol: AnyObject {
     var view: AuthView? { get set }
@@ -12,12 +18,6 @@ protocol AuthViewModelProtocol: AnyObject {
     func didTapGuestLogin()
 }
 
-
-protocol AuthRepositoryProtocol {
-    func login(request: LoginRequest) throws -> LoginResponse
-}
-
-
-protocol AuthView: AnyObject {
-    func render(_ state: AuthViewState)
+protocol AuthCoordinatorProtocol: AnyObject {
+    func showCatalog(session: UserSession)
 }
