@@ -77,7 +77,7 @@
 
 ## Скриншоты
 
-![Экран авторизации](https://disk.yandex.ru/i/p3Ngm038qyNGKw)
-![Ошибка валидации](https://disk.yandex.ru/i/-ZltUfO0UN2CRw)
-![Экран каталога](https://disk.yandex.ru/i/Cna0aWNFwdrrcA)
-![Экран каталога](https://disk.yandex.ru/i/9uoHpdg9q824Tg)
+![Экран авторизации](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/main.png?raw=true)
+![Ошибка валидации](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/valid.png?raw=true)
+![Экран каталога](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/user.png?raw=true)
+![Экран каталога](https://github.com/antoha124/Alfa-music/blob/lab-3/Alfa-music/Photo/guest.png?raw=true)
