@@ -1,0 +1,212 @@
+[
+  {
+    "id": "1",
+    "collectionName": "Суета",
+    "artistName": "og buda",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "2",
+    "collectionName": "Крыша",
+    "artistName": "og buda",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "3",
+    "collectionName": "Дельта",
+    "artistName": "og buda",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "4",
+    "collectionName": "Ночь",
+    "artistName": "og buda",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "5",
+    "collectionName": "Город спит",
+    "artistName": "mayot",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "6",
+    "collectionName": "Танцы",
+    "artistName": "mayot",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "7",
+    "collectionName": "Свобода",
+    "artistName": "mayot",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "8",
+    "collectionName": "Луна",
+    "artistName": "mayot",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "9",
+    "collectionName": "Рассвет",
+    "artistName": "og buda",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "10",
+    "collectionName": "Волны",
+    "artistName": "mayot",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "11",
+    "collectionName": "Тишина",
+    "artistName": "og buda",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "12",
+    "collectionName": "Душа",
+    "artistName": "mayot",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "13",
+    "collectionName": "Звёзды",
+    "artistName": "og buda",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "14",
+    "collectionName": "Ветер",
+    "artistName": "mayot",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "15",
+    "collectionName": "Огни",
+    "artistName": "og buda",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "16",
+    "collectionName": "Дождь",
+    "artistName": "mayot",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "17",
+    "collectionName": "Зори",
+    "artistName": "og buda",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "18",
+    "collectionName": "Сны",
+    "artistName": "mayot",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "19",
+    "collectionName": "Вершина",
+    "artistName": "og buda",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "20",
+    "collectionName": "Полёт",
+    "artistName": "mayot",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "21",
+    "collectionName": "Вечность",
+    "artistName": "og buda",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "22",
+    "collectionName": "Момент",
+    "artistName": "mayot",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "23",
+    "collectionName": "Эхо",
+    "artistName": "og buda",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "24",
+    "collectionName": "Зеркало",
+    "artistName": "mayot",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "25",
+    "collectionName": "Бесконечность",
+    "artistName": "og buda",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "26",
+    "collectionName": "Адреналин",
+    "artistName": "Face",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "27",
+    "collectionName": "Клуб",
+    "artistName": "L'One",
+    "releaseYear": 2022,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "28",
+    "collectionName": "Ритм",
+    "artistName": "Егор Крид",
+    "releaseYear": 2021,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "29",
+    "collectionName": "Параллели",
+    "artistName": "Бабангида",
+    "releaseYear": 2023,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  },
+  {
+    "id": "30",
+    "collectionName": "Воспоминания",
+    "artistName": "HammAli & Navai",
+    "releaseYear": 2024,
+    "artworkUrl100": "https://via.placeholder.com/200"
+  }
+]

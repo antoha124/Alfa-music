@@ -11,8 +11,17 @@ class CatalogCoordinator: Coordinator {
     }
 
     func start() {
+        let networkClient: NetworkClient = URLSessionNetworkClient()
+        let repository: CatalogRepositoryProtocol = CatalogRepository(networkClient: networkClient)
+        let service: CatalogServiceProtocol = CatalogService(repo: repository)
+        let viewModel: CatalogViewModelProtocol = CatalogViewModel(useCase: service)
+        
         let viewController = CatalogViewController()
         viewController.session = session
+        viewController.viewModel = viewModel
+        
+        viewModel.view = viewController
+        
         navigationController.setViewControllers([viewController], animated: true)
     }
 }
