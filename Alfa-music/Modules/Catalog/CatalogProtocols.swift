@@ -1,14 +1,16 @@
-protocol CatalogRepositoryProtocol {
-    func getAlbums() -> [Album]
-}
-
-
 protocol CatalogServiceProtocol {
-    func fetchAlbums() -> [Album]
-    func search(query: String) -> [Album]
+    func fetchAlbums() async throws -> [Album]
+    func fetchAlbums(page: Int, pageSize: Int) async throws -> [Album]
+    func search(query: String) async throws -> [Album]
+    func clearCache()
 }
 
 
+protocol CatalogRepositoryProtocol {
+    func fetchAlbums() async throws -> [Album]
+    func fetchAlbums(page: Int, pageSize: Int) async throws -> [Album]
+    func clearCache()
+}
 
 protocol CatalogView: AnyObject {
     func render(_ state: CatalogViewState)
@@ -20,4 +22,6 @@ protocol CatalogViewModelProtocol: AnyObject {
     func didSelectAlbum(id: String)
     func didTapRetry()
     func didSearch(query: String)
+    func didLoadMore()
+    func clearCache()
 }

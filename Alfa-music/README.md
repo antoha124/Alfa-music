@@ -1,4 +1,4 @@
-
+вар
 # MusicApp
 
 ## Архитектура
@@ -27,13 +27,110 @@
 
 Входных данных нет, открывается после успешной авторизации. При выборе альбома отдаёт `albumId` и открывает TrackDetail.
 
-Состояния: `initial`, `loading`, `content([Album])`, `error(String)`.
+Состояния: `initial`, `loading`, `content([AlbumCellViewModel])`, `empty`, `error(String)`.
+
+### Сетевая загрузка (Лаба 4)
+
+**API:** Alfa ITMO Echo API  
+**Endpoint:** `https://alfaitmo.ru/server/echo/408740/albums`
+
+**Ответ сервера (примерная структура):**
+```json
+[
+  {
+    "id": "1",
+    "collectionName": "Dark Side of the Moon",
+    "artistName": "Pink Floyd",
+    "releaseYear": 1973,
+    "artworkUrl100": "https://example.com/image.jpg"
+  },
+  {
+    "id": "2",
+    "collectionName": "Abbey Road",
+    "artistName": "The Beatles",
+    "releaseYear": 1969,
+    "artworkUrl100": "https://example.com/image.jpg"
+  }
+]
+```
+
+**DTO модель** → `AlbumDTO` (с `Codable`):
+- `id: String`
+- `collectionName: String` → Domain модель `Album.title`
+- `artistName: String`
+- `releaseYear: Int` (хранится напрямую)
+- `artworkUrl100: String?` (для будущего UI)
+
+**Domain модель** → `Album` (Entity):
+- `id: String`
+- `title: String`
+- `artistName: String`
+- `releaseYear: Int`
+- `artworkUrl: String?`
+
+**CellViewModel** → `AlbumCellViewModel` (готовая модель для View слоя):
+- `id: String`
+- `title: String`
+- `artistName: String`
+- `releaseYear: Int`
+- `artworkUrl: String?`
+
+**Сценарии:**
+1. Открылся экран → `didLoad()` → `fetchAlbums()` async → `loading` → `content([AlbumCellViewModel])`
+2. Успешная загрузка → состояние `content` с маппированными моделями
+3. Пустой результат → состояние `empty`
+4. Ошибка сети → **fallback на локальный JSON** из `albums.json` (D3: локальный fallback для отладки)
+5. Нажал Retry → `didTapRetry()` → повторная загрузка с отменой предыдущего Task (D2: cancellation)
+
+**Обработка ошибок:**
+- `NetworkError.invalidURL` → "Неверный URL"
+- `NetworkError.badServerResponse(statusCode)` → "Ошибка сервера: статус XXX"
+- `NetworkError.decodingError(message)` → "Ошибка парсинга данных: ..."
+- `NetworkError.timeout` → "Превышено время ожидания"
+- `NetworkError.networkError(message)` → "Ошибка сети: ..."
+
+**Архитектурные компоненты:**
+- `NetworkClient` (протокол) + `URLSessionNetworkClient` (реализация) — вынесены в отдельный модуль `Network/`
+- `CatalogRepository` реализует `CatalogRepositoryProtocol`, делает сетевой запрос через `NetworkClient`
+- `CatalogService` (реализует `CatalogServiceProtocol`) — делегирует в репозиторий
+- `CatalogViewModel` получает зависимость через протокол и управляет состоянием
+- UI слой (`CatalogViewController` заглушка) не содержит бизнес-логики
 
 Сценарии:
 1. Открылся экран → `didLoad` → `fetchAlbums` → `loading` → `content`
 2. Ввёл поисковый запрос → `didSearch(query:)` → `search` → `content`
 3. Ошибка загрузки → `error` → нажал Retry → `didTapRetry` → повторная загрузка
 4. Нажал на альбом → `didSelectAlbum(id:)` → переход в TrackDetail
+
+
+### Дополнительные возможности (Допы)
+
+**D1: Нормальная модель ошибок** ✓
+- Собственный enum `NetworkError` с типами: `invalidURL`, `badServerResponse`, `decodingError`, `networkError`, `timeout`, `unknown`
+- Каждая ошибка имеет `errorDescription` для локализации
+- В ViewModel ошибки маппятся в текст состояния
+
+**D2: Отмена запроса (cancellation)** ✓
+- При повторном вызове `didLoad()` или `didLoadMore()` предыдущий Task отменяется через `loadingTask?.cancel()`
+- Предотвращает race condition и лишние обновления UI
+
+**D3: Локальный fallback** ✓
+- При недоступности сети используется локальный файл `albums.json`
+- Флаг `useLocalFallback = true` управляет поведением
+- Позволяет тестировать без интернета
+
+**D4: Пагинация** ✓
+- Контракт: `fetchAlbums(page: Int, pageSize: Int)` в Repository/Service/ViewModel
+- `CatalogRepository` кэширует все альбомы в памяти и возвращает срезы по страницам
+- `CatalogViewModel.didLoadMore()` загружает следующую страницу, добавляя новые альбомы к существующим
+- Стандартный размер страницы: 10 альбомов
+
+**D5: Кэширование** ✓
+- Generic `CacheManager<Key, Value>` с TTL (по умолчанию 5 минут = 300 сек)
+- Сохраняет полный список альбомов в памяти с временем истечения
+- `CatalogViewModel.clearCache()` очищает кэш и перезагружает данные
+- Методы: `set()`, `get()`, `clear()`, `clearExpired()`
+- При повторной загрузке в течение TTL возвращается кэшированное значение
 
 
 ## TrackDetail

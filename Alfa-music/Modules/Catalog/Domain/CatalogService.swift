@@ -3,6 +3,19 @@ class CatalogService: CatalogServiceProtocol {
 
     init(repo: CatalogRepositoryProtocol) { self.repo = repo }
 
-    func fetchAlbums() -> [Album] { return repo.getAlbums() }
-    func search(query: String) -> [Album] { return [] }
+    func fetchAlbums() async throws -> [Album] {
+        return try await repo.fetchAlbums()
+    }
+
+    func fetchAlbums(page: Int, pageSize: Int) async throws -> [Album] {
+        return try await repo.fetchAlbums(page: page, pageSize: pageSize)
+    }
+
+    func search(query: String) async throws -> [Album] {
+        return []
+    }
+    
+    func clearCache() {
+        repo.clearCache()
+    }
 }

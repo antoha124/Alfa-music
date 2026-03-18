@@ -68,7 +68,10 @@ class CatalogViewController: UIViewController, CatalogView {
     }
 
 
-    func render(_ state: CatalogViewState) {}
+    func render(_ state: CatalogViewState) {
+    }
+
+
 
 
     func albumTapped(id: String) {
