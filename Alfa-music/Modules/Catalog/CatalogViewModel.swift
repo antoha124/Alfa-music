@@ -2,6 +2,7 @@ import Foundation
 
 class CatalogViewModel: CatalogViewModelProtocol {
     weak var view: CatalogView?
+    weak var coordinator: CatalogCoordinatorProtocol?
 
     private let useCase: CatalogServiceProtocol
     private var viewState = CatalogViewState() {
@@ -10,13 +11,14 @@ class CatalogViewModel: CatalogViewModelProtocol {
         }
     }
     private var loadingTask: Task<Void, Never>?
-    
+
     private var currentPage: Int = 1
     private let pageSize: Int = 10
     private var isLoadingMore = false
 
-    init(useCase: CatalogServiceProtocol) {
+    init(useCase: CatalogServiceProtocol, coordinator: CatalogCoordinatorProtocol?) {
         self.useCase = useCase
+        self.coordinator = coordinator
     }
 
     func didLoad() {
@@ -24,10 +26,10 @@ class CatalogViewModel: CatalogViewModelProtocol {
         loadingTask?.cancel()
         loadingTask = Task {
             viewState.loadingState = .loading
-            
+
             do {
                 let albums = try await useCase.fetchAlbums(page: currentPage, pageSize: pageSize)
-                
+
                 if albums.isEmpty {
                     viewState.loadingState = .empty
                 } else {
@@ -44,21 +46,21 @@ class CatalogViewModel: CatalogViewModelProtocol {
 
     func didLoadMore() {
         guard !isLoadingMore else { return }
-        
+
         isLoadingMore = true
         currentPage += 1
-        
+
         loadingTask?.cancel()
         loadingTask = Task {
             do {
                 let moreAlbums = try await useCase.fetchAlbums(page: currentPage, pageSize: pageSize)
-                
+
                 if case .content(var existing) = viewState.loadingState {
                     let newViewModels = moreAlbums.map { AlbumCellViewModel(from: $0) }
                     existing.append(contentsOf: newViewModels)
                     viewState.loadingState = .content(existing)
                 }
-                
+
                 isLoadingMore = false
             } catch {
                 currentPage -= 1
@@ -68,7 +70,7 @@ class CatalogViewModel: CatalogViewModelProtocol {
     }
 
     func didSelectAlbum(id: String) {
-        print("Selected album: \(id)")
+        coordinator?.showTracks(albumId: id)
     }
 
     func didTapRetry() {
@@ -78,7 +80,7 @@ class CatalogViewModel: CatalogViewModelProtocol {
     func didSearch(query: String) {
         print("Search query: \(query)")
     }
-    
+
     func clearCache() {
         useCase.clearCache()
         didLoad()

@@ -16,6 +16,10 @@ protocol CatalogView: AnyObject {
     func render(_ state: CatalogViewState)
 }
 
+protocol CatalogCoordinatorProtocol: AnyObject {
+    func showTracks(albumId: String)
+}
+
 protocol CatalogViewModelProtocol: AnyObject {
     var view: CatalogView? { get set }
     func didLoad()

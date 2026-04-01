@@ -1,84 +1,162 @@
 import UIKit
 
-
-class CatalogViewController: UIViewController, CatalogView {
+final class CatalogViewController: UIViewController, CatalogView {
 
     var viewModel: CatalogViewModelProtocol?
     var session: UserSession?
 
-    private let welcomeLabel: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 22, weight: .semibold)
-        l.textAlignment = .center
-        l.numberOfLines = 0
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
+    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let messageLabel = UILabel()
+    private let retryButton = UIButton(type: .system)
+
+    private lazy var refreshControl: UIRefreshControl = {
+        let c = UIRefreshControl()
+        c.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        return c
     }()
 
-    private let subtitleLabel: UILabel = {
-        let l = UILabel()
-        l.text = "Каталог альбомов (в разработке)"
-        l.font = .systemFont(ofSize: 16)
-        l.textColor = .secondaryLabel
-        l.textAlignment = .center
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
-
-    private let iconLabel: UILabel = {
-        let l = UILabel()
-        l.text = "МУЗЫКА WWW"
-        l.font = .systemFont(ofSize: 32)
-        l.textAlignment = .center
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
-
+    private let imageLoader: ImageLoaderProtocol = ImageLoader()
+    private var listManager: CatalogListManager?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        setupLayout()
+        title = "Каталог"
 
-        if let name = session?.displayName {
-            welcomeLabel.text = "Добро пожаловать,\(name)!"
-        } else {
-            welcomeLabel.text = "Добро пожаловать!"
-        }
+        setupUI()
+        setupList()
+        setupSearch()
 
         viewModel?.view = self
         viewModel?.didLoad()
     }
 
+    private func setupUI() {
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.refreshControl = refreshControl
+        view.addSubview(tableView)
 
-    private func setupLayout() {
-        let stack = UIStackView(arrangedSubviews: [iconLabel, welcomeLabel, subtitleLabel])
-        stack.axis = .vertical
-        stack.spacing = 16
-        stack.alignment = .center
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stack)
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.hidesWhenStopped = true
+        view.addSubview(loadingIndicator)
+
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+        messageLabel.textAlignment = .center
+        messageLabel.numberOfLines = 0
+        messageLabel.textColor = .secondaryLabel
+        view.addSubview(messageLabel)
+
+        retryButton.translatesAutoresizingMaskIntoConstraints = false
+        retryButton.setTitle("Повторить", for: .normal)
+        retryButton.addTarget(self, action: #selector(didTapRetry), for: .touchUpInside)
+        view.addSubview(retryButton)
 
         NSLayoutConstraint.activate([
-            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
-            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+
+            messageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            messageLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            messageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+
+            retryButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 12),
+            retryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+
+        messageLabel.isHidden = true
+        retryButton.isHidden = true
     }
 
+    private func setupList() {
+        let manager = CatalogListManager(tableView: tableView, imageLoader: imageLoader)
+        manager.delegate = self
+        listManager = manager
+    }
+
+    private func setupSearch() {
+        let search = UISearchController(searchResultsController: nil)
+        search.obscuresBackgroundDuringPresentation = false
+        search.searchResultsUpdater = self
+        search.searchBar.placeholder = "Поиск по альбомам"
+        search.searchBar.autocapitalizationType = .none
+        search.searchBar.returnKeyType = .done
+
+        navigationItem.searchController = search
+        navigationItem.hidesSearchBarWhenScrolling = false
+
+        definesPresentationContext = true
+
+        navigationItem.searchController?.hidesNavigationBarDuringPresentation = false
+    }
 
     func render(_ state: CatalogViewState) {
+        refreshControl.endRefreshing()
+
+        switch state.loadingState {
+        case .initial:
+            loadingIndicator.stopAnimating()
+            tableView.isHidden = true
+            messageLabel.isHidden = true
+            retryButton.isHidden = true
+
+        case .loading:
+            loadingIndicator.startAnimating()
+            tableView.isHidden = true
+            messageLabel.isHidden = true
+            retryButton.isHidden = true
+
+        case .content(let items):
+            loadingIndicator.stopAnimating()
+            messageLabel.isHidden = true
+            retryButton.isHidden = true
+            tableView.isHidden = false
+            listManager?.setItems(items)
+
+        case .empty:
+            loadingIndicator.stopAnimating()
+            tableView.isHidden = true
+            messageLabel.text = "Пока пусто"
+            messageLabel.isHidden = false
+            retryButton.isHidden = true
+
+        case .error(let message):
+            loadingIndicator.stopAnimating()
+            tableView.isHidden = true
+            messageLabel.text = message
+            messageLabel.isHidden = false
+            retryButton.isHidden = false
+        }
     }
 
+    @objc private func didTapRetry() {
+        viewModel?.didTapRetry()
+    }
 
+    @objc private func didPullToRefresh() {
+        viewModel?.clearCache()
+    }
+}
 
-
-    func albumTapped(id: String) {
+extension CatalogViewController: CatalogListManagerDelegate {
+    func didSelectAlbum(id: String) {
         viewModel?.didSelectAlbum(id: id)
     }
 
-    func searchChanged(_ query: String) {
-        viewModel?.didSearch(query: query)
+    func didReachListEnd() {
+        viewModel?.didLoadMore()
+    }
+}
+
+extension CatalogViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let query = searchController.searchBar.text ?? ""
+        listManager?.applyFilter(query: query)
     }
 }
