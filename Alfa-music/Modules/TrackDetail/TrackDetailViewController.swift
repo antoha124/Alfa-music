@@ -4,22 +4,35 @@ final class TrackDetailViewController: UIViewController, TrackDetailView {
 
     var viewModel: TrackDetailViewModelProtocol?
 
-    private let tableView = UITableView(frame: .zero, style: .plain)
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let messageLabel = UILabel()
+    private var tableView = UITableView(frame: .zero, style: .plain)
+    private var loadingIndicator = UIActivityIndicatorView(style: .large)
+    private var messageLabel = UILabel()
+    private var retryButton = UIButton(type: .system)
 
-    private var manager: TrackListManager?
+    private var listManager: TrackListManager?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "Треки"
 
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "К каталогу",
+            style: .plain,
+            target: self,
+            action: #selector(didTapBackToCatalog)
+        )
+
         setupUI()
-        setupManager()
+        setupList()
 
         viewModel?.view = self
         viewModel?.didLoad()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
     private func setupUI() {
@@ -36,6 +49,11 @@ final class TrackDetailViewController: UIViewController, TrackDetailView {
         messageLabel.textColor = .secondaryLabel
         view.addSubview(messageLabel)
 
+        retryButton.translatesAutoresizingMaskIntoConstraints = false
+        retryButton.setTitle("Повторить", for: .normal)
+        retryButton.addTarget(self, action: #selector(didTapRetry), for: .touchUpInside)
+        view.addSubview(retryButton)
+
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -48,16 +66,26 @@ final class TrackDetailViewController: UIViewController, TrackDetailView {
             messageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             messageLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             messageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+            messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+
+            retryButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 12),
+            retryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
 
         messageLabel.isHidden = true
+        retryButton.isHidden = true
     }
 
-    private func setupManager() {
-        let m = TrackListManager(tableView: tableView)
-        m.delegate = self
-        manager = m
+    private func setupList() {
+        tableView.register(TrackListCell.self, forCellReuseIdentifier: TrackListCell.reuseIdentifier)
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 60
+
+        var manager = TrackListManager()
+        manager.delegate = self
+        tableView.dataSource = manager
+        tableView.delegate = manager
+        listManager = manager
     }
 
     func render(_ state: TrackListViewState) {
@@ -66,30 +94,43 @@ final class TrackDetailViewController: UIViewController, TrackDetailView {
             loadingIndicator.stopAnimating()
             tableView.isHidden = true
             messageLabel.isHidden = true
+            retryButton.isHidden = true
 
         case .loading:
             loadingIndicator.startAnimating()
             tableView.isHidden = true
             messageLabel.isHidden = true
+            retryButton.isHidden = true
 
-        case .content(let items):
+        case .content:
             loadingIndicator.stopAnimating()
             messageLabel.isHidden = true
+            retryButton.isHidden = true
             tableView.isHidden = false
-            manager?.setItems(items)
+            listManager?.setItems(state.contentItems ?? [], in: tableView)
 
         case .empty:
             loadingIndicator.stopAnimating()
             tableView.isHidden = true
             messageLabel.text = "В этом альбоме пока нет треков"
             messageLabel.isHidden = false
+            retryButton.isHidden = true
 
-        case .error(let message):
+        case .error:
             loadingIndicator.stopAnimating()
             tableView.isHidden = true
-            messageLabel.text = message
+            messageLabel.text = state.errorMessage
             messageLabel.isHidden = false
+            retryButton.isHidden = false
         }
+    }
+
+    @objc private func didTapBackToCatalog() {
+        viewModel?.didTapBack()
+    }
+
+    @objc private func didTapRetry() {
+        viewModel?.didTapRetry()
     }
 }
 

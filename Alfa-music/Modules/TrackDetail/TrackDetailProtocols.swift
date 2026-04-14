@@ -6,10 +6,13 @@ protocol TrackDetailViewModelProtocol: AnyObject {
     var view: TrackDetailView? { get set }
     func didLoad()
     func didSelectTrack(id: String)
+    func didTapBack()
+    func didTapRetry()
 }
 
-// Детали трека сделаю позже
-protocol TrackDetailCoordinatorProtocol: AnyObject {}
+protocol TrackDetailCoordinatorProtocol: AnyObject {
+    func finish()
+}
 
 protocol TrackServiceProtocol {
     func fetchTracks(albumId: String) -> [Track]

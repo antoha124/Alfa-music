@@ -7,22 +7,10 @@ protocol TrackListManagerDelegate: AnyObject {
 final class TrackListManager: NSObject {
 
     weak var delegate: TrackListManagerDelegate?
+
     private var items: [TrackCellViewModel] = []
 
-    private let tableView: UITableView
-
-    init(tableView: UITableView) {
-        self.tableView = tableView
-        super.init()
-
-        tableView.register(TrackListCell.self, forCellReuseIdentifier: TrackListCell.reuseIdentifier)
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 60
-    }
-
-    func setItems(_ items: [TrackCellViewModel]) {
+    func setItems(_ items: [TrackCellViewModel], in tableView: UITableView) {
         self.items = items
         tableView.reloadData()
     }
@@ -34,7 +22,10 @@ extension TrackListManager: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: TrackListCell.reuseIdentifier, for: indexPath) as? TrackListCell else {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: TrackListCell.reuseIdentifier,
+            for: indexPath
+        ) as? TrackListCell else {
             return UITableViewCell()
         }
         cell.configure(with: items[indexPath.row])

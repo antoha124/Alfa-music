@@ -1,5 +1,8 @@
+import Foundation
+
 final class TrackDetailViewModel: TrackDetailViewModelProtocol {
     weak var view: TrackDetailView?
+    weak var coordinator: TrackDetailCoordinatorProtocol?
 
     private let albumId: String
     private let service: TrackServiceProtocol
@@ -8,9 +11,10 @@ final class TrackDetailViewModel: TrackDetailViewModelProtocol {
         didSet { view?.render(viewState) }
     }
 
-    init(albumId: String, service: TrackServiceProtocol) {
+    init(albumId: String, service: TrackServiceProtocol, coordinator: TrackDetailCoordinatorProtocol?) {
         self.albumId = albumId
         self.service = service
+        self.coordinator = coordinator
     }
 
     func didLoad() {
@@ -22,12 +26,31 @@ final class TrackDetailViewModel: TrackDetailViewModelProtocol {
             return
         }
 
-        let vms = tracks.map(TrackCellViewModel.init)
-        viewState.state = .content(vms)
+        viewState.state = .content(makeCellViewModels(from: tracks))
     }
 
     func didSelectTrack(id: String) {
-        // Детали трека сделаем позже
-        print("Selected track: \(id)")
+        _ = id
+    }
+
+    func didTapBack() {
+        coordinator?.finish()
+    }
+
+    func didTapRetry() {
+        didLoad()
+    }
+
+    private func makeCellViewModels(from tracks: [Track]) -> [TrackCellViewModel] {
+        tracks.map { track in
+            let minutes = track.durationSeconds / 60
+            let seconds = track.durationSeconds % 60
+            return TrackCellViewModel(
+                id: track.id,
+                title: track.title,
+                subtitle: track.artistName,
+                rightText: String(format: "%d:%02d", minutes, seconds)
+            )
+        }
     }
 }
