@@ -27,5 +27,6 @@ protocol CatalogViewModelProtocol: AnyObject {
     func didTapRetry()
     func didSearch(query: String)
     func didLoadMore()
+    func didDisplayItem(at index: Int, totalCount: Int)
     func clearCache()
 }

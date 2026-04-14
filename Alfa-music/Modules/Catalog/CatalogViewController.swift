@@ -5,18 +5,18 @@ final class CatalogViewController: UIViewController, CatalogView {
     var viewModel: CatalogViewModelProtocol?
     var session: UserSession?
 
-    private let tableView = UITableView(frame: .zero, style: .plain)
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let messageLabel = UILabel()
-    private let retryButton = UIButton(type: .system)
+    private var tableView = UITableView(frame: .zero, style: .plain)
+    private var loadingIndicator = UIActivityIndicatorView(style: .large)
+    private var messageLabel = UILabel()
+    private var retryButton = UIButton(type: .system)
 
     private lazy var refreshControl: UIRefreshControl = {
-        let c = UIRefreshControl()
+        var c = UIRefreshControl()
         c.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
         return c
     }()
 
-    private let imageLoader: ImageLoaderProtocol = ImageLoader()
+    private var imageLoader: ImageLoaderProtocol = ImageLoader()
     private var listManager: CatalogListManager?
 
     override func viewDidLoad() {
@@ -75,13 +75,20 @@ final class CatalogViewController: UIViewController, CatalogView {
     }
 
     private func setupList() {
-        let manager = CatalogListManager(tableView: tableView, imageLoader: imageLoader)
+        tableView.register(AlbumCell.self, forCellReuseIdentifier: AlbumCell.reuseIdentifier)
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 76
+
+        var manager = CatalogListManager(imageLoader: imageLoader)
         manager.delegate = self
+        tableView.dataSource = manager
+        tableView.delegate = manager
+        tableView.prefetchDataSource = manager
         listManager = manager
     }
 
     private func setupSearch() {
-        let search = UISearchController(searchResultsController: nil)
+        var search = UISearchController(searchResultsController: nil)
         search.obscuresBackgroundDuringPresentation = false
         search.searchResultsUpdater = self
         search.searchBar.placeholder = "Поиск по альбомам"
@@ -112,12 +119,12 @@ final class CatalogViewController: UIViewController, CatalogView {
             messageLabel.isHidden = true
             retryButton.isHidden = true
 
-        case .content(let items):
+        case .content:
             loadingIndicator.stopAnimating()
             messageLabel.isHidden = true
             retryButton.isHidden = true
             tableView.isHidden = false
-            listManager?.setItems(items)
+            listManager?.setItems(state.contentItems ?? [], in: tableView)
 
         case .empty:
             loadingIndicator.stopAnimating()
@@ -126,10 +133,10 @@ final class CatalogViewController: UIViewController, CatalogView {
             messageLabel.isHidden = false
             retryButton.isHidden = true
 
-        case .error(let message):
+        case .error:
             loadingIndicator.stopAnimating()
             tableView.isHidden = true
-            messageLabel.text = message
+            messageLabel.text = state.errorMessage
             messageLabel.isHidden = false
             retryButton.isHidden = false
         }
@@ -149,14 +156,13 @@ extension CatalogViewController: CatalogListManagerDelegate {
         viewModel?.didSelectAlbum(id: id)
     }
 
-    func didReachListEnd() {
-        viewModel?.didLoadMore()
+    func didDisplayItem(at index: Int, totalCount: Int) {
+        viewModel?.didDisplayItem(at: index, totalCount: totalCount)
     }
 }
 
 extension CatalogViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        let query = searchController.searchBar.text ?? ""
-        listManager?.applyFilter(query: query)
+        viewModel?.didSearch(query: searchController.searchBar.text ?? "")
     }
 }
