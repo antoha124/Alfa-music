@@ -1,19 +1,17 @@
 protocol TrackDetailView: AnyObject {
-    func render(_ state: TrackDetailViewState)
+    func render(_ state: TrackListViewState)
 }
 
 protocol TrackDetailViewModelProtocol: AnyObject {
     var view: TrackDetailView? { get set }
     func didLoad()
-    func didTapPlay()
-    func didTapLike()
+    func didSelectTrack(id: String)
     func didTapBack()
-    func didTapNextTrack()
-    func didTapPreviousTrack()
+    func didTapRetry()
 }
 
 protocol TrackDetailCoordinatorProtocol: AnyObject {
-    func dismiss()
+    func finish()
 }
 
 protocol TrackServiceProtocol {

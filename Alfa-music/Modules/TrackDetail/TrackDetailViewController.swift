@@ -1,40 +1,42 @@
 import UIKit
 
-final class CatalogViewController: UIViewController, CatalogView {
+final class TrackDetailViewController: UIViewController, TrackDetailView {
 
-    var viewModel: CatalogViewModelProtocol?
-    var session: UserSession?
+    var viewModel: TrackDetailViewModelProtocol?
 
     private var tableView = UITableView(frame: .zero, style: .plain)
     private var loadingIndicator = UIActivityIndicatorView(style: .large)
     private var messageLabel = UILabel()
     private var retryButton = UIButton(type: .system)
 
-    private lazy var refreshControl: UIRefreshControl = {
-        var c = UIRefreshControl()
-        c.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
-        return c
-    }()
-
-    private var imageLoader: ImageLoaderProtocol = ImageLoader()
-    private var listManager: CatalogListManager?
+    private var listManager: TrackListManager?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = "Каталог"
+        title = "Треки"
+
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "К каталогу",
+            style: .plain,
+            target: self,
+            action: #selector(didTapBackToCatalog)
+        )
 
         setupUI()
         setupList()
-        setupSearch()
 
         viewModel?.view = self
         viewModel?.didLoad()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
     private func setupUI() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.refreshControl = refreshControl
         view.addSubview(tableView)
 
         loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -75,38 +77,19 @@ final class CatalogViewController: UIViewController, CatalogView {
     }
 
     private func setupList() {
-        tableView.register(AlbumCell.self, forCellReuseIdentifier: AlbumCell.reuseIdentifier)
+        tableView.register(TrackListCell.self, forCellReuseIdentifier: TrackListCell.reuseIdentifier)
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 76
+        tableView.estimatedRowHeight = 60
 
-        var manager = CatalogListManager(imageLoader: imageLoader)
+        var manager = TrackListManager()
         manager.delegate = self
         tableView.dataSource = manager
         tableView.delegate = manager
-        tableView.prefetchDataSource = manager
         listManager = manager
     }
 
-    private func setupSearch() {
-        var search = UISearchController(searchResultsController: nil)
-        search.obscuresBackgroundDuringPresentation = false
-        search.searchResultsUpdater = self
-        search.searchBar.placeholder = "Поиск по альбомам"
-        search.searchBar.autocapitalizationType = .none
-        search.searchBar.returnKeyType = .done
-
-        navigationItem.searchController = search
-        navigationItem.hidesSearchBarWhenScrolling = false
-
-        definesPresentationContext = true
-
-        navigationItem.searchController?.hidesNavigationBarDuringPresentation = false
-    }
-
-    func render(_ state: CatalogViewState) {
-        refreshControl.endRefreshing()
-
-        switch state.loadingState {
+    func render(_ state: TrackListViewState) {
+        switch state.state {
         case .initial:
             loadingIndicator.stopAnimating()
             tableView.isHidden = true
@@ -129,7 +112,7 @@ final class CatalogViewController: UIViewController, CatalogView {
         case .empty:
             loadingIndicator.stopAnimating()
             tableView.isHidden = true
-            messageLabel.text = "Пока пусто"
+            messageLabel.text = "В этом альбоме пока нет треков"
             messageLabel.isHidden = false
             retryButton.isHidden = true
 
@@ -142,27 +125,17 @@ final class CatalogViewController: UIViewController, CatalogView {
         }
     }
 
+    @objc private func didTapBackToCatalog() {
+        viewModel?.didTapBack()
+    }
+
     @objc private func didTapRetry() {
         viewModel?.didTapRetry()
     }
-
-    @objc private func didPullToRefresh() {
-        viewModel?.clearCache()
-    }
 }
 
-extension CatalogViewController: CatalogListManagerDelegate {
-    func didSelectAlbum(id: String) {
-        viewModel?.didSelectAlbum(id: id)
-    }
-
-    func didDisplayItem(at index: Int, totalCount: Int) {
-        viewModel?.didDisplayItem(at: index, totalCount: totalCount)
-    }
-}
-
-extension CatalogViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        viewModel?.didSearch(query: searchController.searchBar.text ?? "")
+extension TrackDetailViewController: TrackListManagerDelegate {
+    func didSelectTrack(id: String) {
+        viewModel?.didSelectTrack(id: id)
     }
 }

@@ -29,6 +29,19 @@
 
 Состояния: `initial`, `loading`, `content([AlbumCellViewModel])`, `empty`, `error(String)`.
 
+**Что происходит по tap:**
+- Tap по альбому → `CatalogViewModel.didSelectAlbum` → координатор `showTracks(albumId:)` → открывается `TrackDetailViewController` (Со списком треков).
+
+**Треки чуть позже добавлю на сервак, пока просто так добавил)**
+
+**Переиспользуемые компоненты (reuse):**
+- `AlbumCell` — ячейка таблицы, настраивается только из `AlbumCellViewModel`.
+- `CatalogListManager` — отдельная сущность для `UITableViewDataSource/Delegate/Prefetch`, VC не превращается в комбайн.
+
+**Доп**
+- Картинки: `ImageLoader` + `NSCache`, отмена загрузки в `prepareForReuse`.
+- UI-пагинация: при приближении к концу списка list manager вызывает `didReachListEnd()` → `viewModel.didLoadMore()`.
+
 ### Сетевая загрузка (Лаба 4)
 
 **API:** Alfa ITMO Echo API  
@@ -159,7 +172,7 @@
 
 ## Что происходит при успешном входе
 
-После успешной авторизации открывается экран-заглушка каталога (`CatalogViewController`):
+После успешной авторизации открывается экран каталога (`CatalogViewController`) со списком альбомов:
 
 - Отображается приветствие с именем пользователя из сессии.
 - Подпись: «Каталог альбомов (в разработке)».

@@ -4,7 +4,7 @@ protocol NetworkClient {
     func get<T: Decodable>(_ url: URL) async throws -> T
 }
 
-final class URLSessionNetworkClient: NetworkClient {
+class URLSessionNetworkClient: NetworkClient {
     private let session: URLSession
 
     init(session: URLSession = .shared) {
