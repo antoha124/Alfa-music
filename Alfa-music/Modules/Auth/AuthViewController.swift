@@ -4,90 +4,69 @@ class AuthViewController: UIViewController, AuthView {
 
     var viewModel: AuthViewModelProtocol?
 
-    private let scrollView = UIScrollView()
+    private var scrollView = UIScrollView()
 
-    private let logoLabel: UILabel = {
-        let label = UILabel()
+    private var logoLabel: UILabel = {
+        var label = UILabel()
         label.text = "Alfa Music"
-        label.font = .systemFont(ofSize: 32, weight: .bold)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
-    private let emailTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Email"
-        textField.keyboardType = .emailAddress
-        textField.autocapitalizationType = .none
-        textField.autocorrectionType = .no
-        textField.returnKeyType = .next
-        textField.borderStyle = .roundedRect
-        return textField
-    }()
+    private var emailField = DSFormTextField()
+    private var passwordField = DSFormTextField()
 
-    private let emailErrorLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .systemRed
-        label.font = .systemFont(ofSize: 12)
-        label.isHidden = true
-        return label
-    }()
-
-    private let passwordTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Пароль"
-        textField.isSecureTextEntry = true
-        textField.returnKeyType = .done
-        textField.borderStyle = .roundedRect
-        return textField
-    }()
-
-    private let passwordErrorLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .systemRed
-        label.font = .systemFont(ofSize: 12)
-        label.isHidden = true
-        return label
-    }()
-
-    private let errorLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .systemRed
-        label.font = .systemFont(ofSize: 14)
+    private var errorLabel: UILabel = {
+        var label = UILabel()
         label.textAlignment = .center
         label.numberOfLines = 0
         label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
-    private let loginButton: UIButton = {
-        var config = UIButton.Configuration.filled()
-        config.title = "Войти"
-        config.cornerStyle = .medium
-        return UIButton(configuration: config)
-    }()
-
-    private let guestButton: UIButton = {
-        var config = UIButton.Configuration.plain()
-        config.title = "Войти как гость"
-        return UIButton(configuration: config)
-    }()
-
-
+    private var loginButton = DSButton(style: .primary)
+    private var guestButton = DSButton(style: .secondary)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = DS.Colors.background
+
+        logoLabel.ds_apply(.titleLarge)
+
+        emailField.configure(
+            title: "Email",
+            placeholder: "Email",
+            isSecure: false,
+            keyboardType: .emailAddress,
+            autocapitalizationType: .none,
+            returnKeyType: .next
+        )
+        passwordField.configure(
+            title: "Пароль",
+            placeholder: "Пароль",
+            isSecure: true,
+            keyboardType: .default,
+            autocapitalizationType: .none,
+            returnKeyType: .done
+        )
+
+        loginButton.setTitle("Войти", for: .normal)
+        guestButton.setTitle("Войти как гость", for: .normal)
+
+        errorLabel.ds_apply(.errorBanner)
+
         setupLayout()
         setupKeyboardObserver()
-        emailTextField.delegate = self
-        passwordTextField.delegate = self
+
+        emailField.input.delegate = self
+        passwordField.input.delegate = self
         loginButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         guestButton.addTarget(self, action: #selector(guestTapped), for: .touchUpInside)
 
-        emailTextField.addTarget(self, action: #selector(emailChanged), for: .editingChanged)
-        passwordTextField.addTarget(self, action: #selector(passwordChanged), for: .editingChanged)
+        emailField.input.addTarget(self, action: #selector(emailChanged), for: .editingChanged)
+        passwordField.input.addTarget(self, action: #selector(passwordChanged), for: .editingChanged)
 
         viewModel?.view = self
         viewModel?.didLoad()
@@ -97,22 +76,39 @@ class AuthViewController: UIViewController, AuthView {
         NotificationCenter.default.removeObserver(self)
     }
 
-
-
     private func setupLayout() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
+        var contentView = UIView()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentView)
 
-        let stack = UIStackView(arrangedSubviews: [logoLabel, emailTextField, emailErrorLabel, passwordTextField, passwordErrorLabel, errorLabel, loginButton, guestButton])
+        var formStack = UIStackView(arrangedSubviews: [
+            emailField,
+            passwordField,
+            errorLabel,
+            loginButton,
+            guestButton
+        ])
+        formStack.axis = .vertical
+        formStack.alignment = .center
+        formStack.spacing = DS.Spacing.m
+        formStack.setCustomSpacing(DS.Layout.Auth.fieldsToErrorSpacing, after: passwordField)
+        formStack.setCustomSpacing(DS.Layout.Auth.fieldsToButtonSpacing, after: passwordField)
+        formStack.translatesAutoresizingMaskIntoConstraints = false
+
+        var stack = UIStackView(arrangedSubviews: [logoLabel, formStack])
         stack.axis = .vertical
-        stack.spacing = 4
-        stack.setCustomSpacing(48, after: logoLabel)
-        stack.setCustomSpacing(12, after: emailErrorLabel)
-        stack.setCustomSpacing(12, after: passwordErrorLabel)
-        stack.setCustomSpacing(24, after: errorLabel)
+        stack.alignment = .center
+        stack.spacing = DS.Layout.Auth.titleToFieldsSpacing
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        scrollView.addSubview(stack)
+        contentView.addSubview(stack)
+        var dynamicFieldWidthConstraint = emailField.widthAnchor.constraint(
+            equalTo: contentView.widthAnchor,
+            constant: -DS.Layout.Auth.horizontalInset * 2
+        )
+        dynamicFieldWidthConstraint.priority = .defaultHigh
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -120,18 +116,23 @@ class AuthViewController: UIViewController, AuthView {
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-            stack.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor),
-            stack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -24),
-            stack.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -48),
+            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            contentView.heightAnchor.constraint(greaterThanOrEqualTo: scrollView.frameLayoutGuide.heightAnchor),
 
-            emailTextField.heightAnchor.constraint(equalToConstant: 44),
-            passwordTextField.heightAnchor.constraint(equalToConstant: 44),
-            loginButton.heightAnchor.constraint(equalToConstant: 50),
+            stack.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
+            dynamicFieldWidthConstraint,
+            passwordField.widthAnchor.constraint(equalTo: emailField.widthAnchor),
+            errorLabel.widthAnchor.constraint(equalTo: emailField.widthAnchor),
+            loginButton.widthAnchor.constraint(equalTo: emailField.widthAnchor),
+            guestButton.widthAnchor.constraint(equalTo: emailField.widthAnchor)
         ])
     }
-
-
 
     private func setupKeyboardObserver() {
         NotificationCenter.default.addObserver(
@@ -144,66 +145,46 @@ class AuthViewController: UIViewController, AuthView {
 
     @objc private func keyboardWillChangeFrame(_ note: Notification) {
         guard
-            let userInfo = note.userInfo,
-            let endFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+            var userInfo = note.userInfo,
+            var endFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
         else { return }
 
-        let keyboardInView = view.convert(endFrame, from: nil)
-        let intersection = view.bounds.intersection(keyboardInView)
+        var keyboardInView = view.convert(endFrame, from: nil)
+        var intersection = view.bounds.intersection(keyboardInView)
         scrollView.contentInset.bottom = intersection.height
         scrollView.verticalScrollIndicatorInsets.bottom = intersection.height
     }
 
-
-
     @objc private func emailChanged() {
-        let text = emailTextField.text ?? ""
+        var text = emailField.input.text ?? ""
         guard !text.isEmpty else {
-            setEmailError(nil)
+            emailField.setErrorText(nil)
             return
         }
         if !text.contains("@") || !text.contains(".") {
-            setEmailError("Введите корректный email")
+            emailField.setErrorText("Введите корректный email")
         } else {
-            setEmailError(nil)
+            emailField.setErrorText(nil)
         }
     }
 
     @objc private func passwordChanged() {
-        let text = passwordTextField.text ?? ""
+        var text = passwordField.input.text ?? ""
         guard !text.isEmpty else {
-            setPasswordError(nil)
+            passwordField.setErrorText(nil)
             return
         }
         if text.count < 4 {
-            setPasswordError("Минимум 4 символа")
+            passwordField.setErrorText("Минимум 4 символа")
         } else {
-            setPasswordError(nil)
+            passwordField.setErrorText(nil)
         }
     }
 
-
-    private func setEmailError(_ message: String?) {
-        emailErrorLabel.text = message
-        emailErrorLabel.isHidden = message == nil
-        emailTextField.layer.borderWidth = message == nil ? 0 : 1
-        emailTextField.layer.borderColor = UIColor.systemRed.cgColor
-        emailTextField.layer.cornerRadius = 6
-    }
-
-    private func setPasswordError(_ message: String?) {
-        passwordErrorLabel.text = message
-        passwordErrorLabel.isHidden = message == nil
-        passwordTextField.layer.borderWidth = message == nil ? 0 : 1
-        passwordTextField.layer.borderColor = UIColor.systemRed.cgColor
-        passwordTextField.layer.cornerRadius = 6
-    }
-
-
     @objc private func loginTapped() {
         viewModel?.didTapLogin(
-            email: emailTextField.text ?? "",
-            password: passwordTextField.text ?? ""
+            email: emailField.input.text ?? "",
+            password: passwordField.input.text ?? ""
         )
     }
 
@@ -211,9 +192,8 @@ class AuthViewController: UIViewController, AuthView {
         viewModel?.didTapGuestLogin()
     }
 
-
     func render(_ state: AuthViewState) {
-        if let error = state.errorText {
+        if var error = state.errorText {
             errorLabel.text = error
             errorLabel.isHidden = false
         } else {
@@ -222,11 +202,10 @@ class AuthViewController: UIViewController, AuthView {
     }
 }
 
-
 extension AuthViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == emailTextField {
-            passwordTextField.becomeFirstResponder()
+        if textField == emailField.input {
+            passwordField.input.becomeFirstResponder()
         } else {
             textField.resignFirstResponder()
             loginTapped()

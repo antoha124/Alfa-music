@@ -4,10 +4,16 @@ final class TrackDetailCoordinator: Coordinator, TrackDetailCoordinatorProtocol 
 
     let navigationController: UINavigationController
     private let albumId: String
+    private let onFinish: () -> Void
 
-    init(navigationController: UINavigationController, albumId: String) {
+    init(
+        navigationController: UINavigationController,
+        albumId: String,
+        onFinish: @escaping () -> Void = {}
+    ) {
         self.navigationController = navigationController
         self.albumId = albumId
+        self.onFinish = onFinish
     }
 
     func start() {
@@ -16,12 +22,18 @@ final class TrackDetailCoordinator: Coordinator, TrackDetailCoordinatorProtocol 
 
         let vm: TrackDetailViewModelProtocol = TrackDetailViewModel(
             albumId: albumId,
-            service: trackService
+            service: trackService,
+            coordinator: self
         )
 
         let vc = TrackDetailViewController()
         vc.viewModel = vm
         vm.view = vc
         navigationController.pushViewController(vc, animated: true)
+    }
+
+    func finish() {
+        navigationController.popViewController(animated: true)
+        onFinish()
     }
 }

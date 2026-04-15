@@ -1,5 +1,15 @@
-вар
 # MusicApp
+
+
+### Что сделал в ЛР6 (кратко)
+
+- Сделал дизайн-систему в папке `DesignSystem`.
+- Вынес токены: цвета, отступы, радиусы, типографику.
+- Сделал компоненты: `DSButton`, `DSFormTextField`, `DSStateContainerView`.
+- Применил это на двух экранах: `Auth` и `Catalog`.
+- Состояния `loading / empty / error` в каталоге показывает `DSStateContainerView`.
+- Из допов сделал: **D2** — иконки (`DSIcon`)
+
 
 ## Архитектура
 

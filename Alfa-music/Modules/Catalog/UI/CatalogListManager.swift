@@ -11,7 +11,7 @@ final class CatalogListManager: NSObject {
 
     private var items: [AlbumCellViewModel] = []
 
-    private let imageLoader: ImageLoaderProtocol
+    private var imageLoader: ImageLoaderProtocol
 
     init(imageLoader: ImageLoaderProtocol) {
         self.imageLoader = imageLoader
@@ -37,7 +37,7 @@ extension CatalogListManager: UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: AlbumCell.reuseIdentifier, for: indexPath) as? AlbumCell else {
             return UITableViewCell()
         }
-        let vm = item(at: indexPath)
+        var vm = item(at: indexPath)
         cell.configure(with: vm, imageLoader: imageLoader)
         return cell
     }
@@ -56,18 +56,18 @@ extension CatalogListManager: UITableViewDelegate {
 
 extension CatalogListManager: UITableViewDataSourcePrefetching {
     func tableView(_ tableView: UITableView, prefetchRowsAt indexPaths: [IndexPath]) {
-        let urls: [URL] = indexPaths.compactMap {
-            let vm = items[safe: $0.row]
-            guard let s = vm?.artworkUrl else { return nil }
+        var urls: [URL] = indexPaths.compactMap {
+            var vm = items[safe: $0.row]
+            guard var s = vm?.artworkUrl else { return nil }
             return URL(string: s)
         }
         imageLoader.prefetch(urls: urls)
     }
 
     func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
-        let urls: [URL] = indexPaths.compactMap {
-            let vm = items[safe: $0.row]
-            guard let s = vm?.artworkUrl else { return nil }
+        var urls: [URL] = indexPaths.compactMap {
+            var vm = items[safe: $0.row]
+            guard var s = vm?.artworkUrl else { return nil }
             return URL(string: s)
         }
         imageLoader.cancelPrefetch(urls: urls)
