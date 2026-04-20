@@ -2,11 +2,23 @@ import UIKit
 
 final class DSFormTextField: UIView {
 
-    private let titleLabel = UILabel()
-    private let textField = UITextField()
-    private let errorLabel = UILabel()
+    struct Model {
+        var title: String
+        var placeholder: String
+        var errorMessage: String?
+        var isSecure: Bool
+        var keyboardType: UIKeyboardType
+        var autocapitalizationType: UITextAutocapitalizationType
+        var returnKeyType: UIReturnKeyType
+    }
 
-    var input: UITextField { textField }
+    private var titleLabel = UILabel()
+    private var textField = UITextField()
+    private var errorLabel = UILabel()
+
+    var onEditingChanged: (() -> Void)?
+
+    var onReturn: (() -> Bool)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -25,12 +37,14 @@ final class DSFormTextField: UIView {
         textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: DS.Spacing.m, height: 0))
         textField.rightViewMode = .always
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.delegate = self
+        textField.addTarget(self, action: #selector(editingChanged), for: .editingChanged)
 
         errorLabel.ds_apply(.errorField)
         errorLabel.numberOfLines = 0
         errorLabel.isHidden = true
 
-        let stack = UIStackView(arrangedSubviews: [titleLabel, textField, errorLabel])
+        var stack = UIStackView(arrangedSubviews: [titleLabel, textField, errorLabel])
         stack.axis = .vertical
         stack.spacing = DS.Layout.FormField.labelToInputSpacing
         stack.setCustomSpacing(DS.Layout.FormField.inputToErrorSpacing, after: textField)
@@ -51,33 +65,74 @@ final class DSFormTextField: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(
-        title: String,
-        placeholder: String,
-        isSecure: Bool = false,
-        keyboardType: UIKeyboardType = .default,
-        autocapitalizationType: UITextAutocapitalizationType = .sentences,
-        returnKeyType: UIReturnKeyType = .default
-    ) {
-        titleLabel.text = title
+    func render(_ model: Model) {
+        titleLabel.text = model.title
         textField.attributedPlaceholder = NSAttributedString(
-            string: placeholder,
+            string: model.placeholder,
             attributes: [
                 .foregroundColor: DS.Colors.textSecondary,
-                .font: DS.Typography.body()
+                .font: DS.Typography.body
             ]
         )
-        textField.isSecureTextEntry = isSecure
-        textField.keyboardType = keyboardType
-        textField.autocapitalizationType = autocapitalizationType
-        textField.returnKeyType = returnKeyType
-    }
+        textField.isSecureTextEntry = model.isSecure
+        textField.keyboardType = model.keyboardType
+        textField.autocapitalizationType = model.autocapitalizationType
+        textField.returnKeyType = model.returnKeyType
 
-    func setErrorText(_ message: String?) {
-        errorLabel.text = message
-        errorLabel.isHidden = message == nil || message?.isEmpty == true
-        let hasError = !(message == nil || message?.isEmpty == true)
+        errorLabel.text = model.errorMessage
+        var hasError = !(model.errorMessage == nil || model.errorMessage?.isEmpty == true)
+        errorLabel.isHidden = !hasError
         textField.layer.borderWidth = hasError ? 1 : 0
         textField.layer.borderColor = hasError ? DS.Colors.error.cgColor : nil
+    }
+
+    func currentText() -> String {
+        textField.text ?? ""
+    }
+
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
+        textField.becomeFirstResponder()
+    }
+
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
+        textField.resignFirstResponder()
+    }
+
+    @objc private func editingChanged() {
+        onEditingChanged?()
+    }
+}
+
+extension DSFormTextField: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        onReturn?() ?? true
+    }
+}
+
+extension DSFormTextField.Model {
+    static func email(errorMessage: String?) -> DSFormTextField.Model {
+        DSFormTextField.Model(
+            title: "Email",
+            placeholder: "Email",
+            errorMessage: errorMessage,
+            isSecure: false,
+            keyboardType: .emailAddress,
+            autocapitalizationType: .none,
+            returnKeyType: .next
+        )
+    }
+
+    static func password(errorMessage: String?) -> DSFormTextField.Model {
+        DSFormTextField.Model(
+            title: "Пароль",
+            placeholder: "Пароль",
+            errorMessage: errorMessage,
+            isSecure: true,
+            keyboardType: .default,
+            autocapitalizationType: .none,
+            returnKeyType: .done
+        )
     }
 }

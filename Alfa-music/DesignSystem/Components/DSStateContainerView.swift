@@ -1,5 +1,6 @@
 import UIKit
 
+/// Контейнер состояний экрана: полная конфигурация передаётся одним `Model` при `render`.
 final class DSStateContainerView: UIView {
 
     enum State: Equatable {
@@ -9,14 +10,19 @@ final class DSStateContainerView: UIView {
         case error(message: String, showsRetry: Bool)
     }
 
-    var onRetry: (() -> Void)?
+    struct Model {
+        var state: State
+        var onRetry: (() -> Void)?
+    }
+
+    private var onRetry: (() -> Void)?
 
     private var stack = UIStackView()
     private var activity = UIActivityIndicatorView(style: .large)
     private var iconView = UIImageView()
     private var titleLabel = UILabel()
     private var messageLabel = UILabel()
-    private var retryButton = DSButton(style: .primary)
+    private var retryButton = DSButton(model: DSButton.Model(title: "Повторить", style: .primary, isEnabled: true))
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -44,8 +50,7 @@ final class DSStateContainerView: UIView {
         messageLabel.numberOfLines = 0
         messageLabel.ds_apply(.body)
 
-        retryButton.setTitle("Повторить", for: .normal)
-        retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
+        retryButton.addTouchUpInside(self, action: #selector(retryTapped))
         retryButton.isHidden = true
 
         addSubview(stack)
@@ -64,11 +69,12 @@ final class DSStateContainerView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setState(_ state: State) {
+    func render(_ model: Model) {
+        onRetry = model.onRetry
         activity.stopAnimating()
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-        switch state {
+        switch model.state {
         case .hidden:
             isHidden = true
 

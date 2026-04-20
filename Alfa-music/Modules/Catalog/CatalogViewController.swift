@@ -27,10 +27,6 @@ final class CatalogViewController: UIViewController, CatalogView {
         setupList()
         setupSearch()
 
-        stateView.onRetry = { [weak self] in
-            self?.viewModel?.didTapRetry()
-        }
-
         viewModel?.view = self
         viewModel?.didLoad()
     }
@@ -56,7 +52,7 @@ final class CatalogViewController: UIViewController, CatalogView {
             stateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        stateView.setState(.hidden)
+        stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
     }
 
     private func setupList() {
@@ -100,25 +96,31 @@ final class CatalogViewController: UIViewController, CatalogView {
 
         switch state.loadingState {
         case .initial:
-            stateView.setState(.hidden)
+            stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
             tableView.isHidden = true
 
         case .loading:
-            stateView.setState(.loading(message: nil))
+            stateView.render(DSStateContainerView.Model(state: .loading(message: nil), onRetry: nil))
             tableView.isHidden = true
 
         case .content:
-            stateView.setState(.hidden)
+            stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
             tableView.isHidden = false
             listManager?.setItems(state.contentItems ?? [], in: tableView)
 
         case .empty:
-            stateView.setState(.empty(title: "Пока пусто", message: "Список пуст или ничего не найдено по запросу."))
+            stateView.render(DSStateContainerView.Model(
+                state: .empty(title: "Пока пусто", message: "Список пуст или ничего не найдено по запросу."),
+                onRetry: nil
+            ))
             tableView.isHidden = true
 
         case .error:
             var message = state.errorMessage ?? "Ошибка"
-            stateView.setState(.error(message: message, showsRetry: true))
+            stateView.render(DSStateContainerView.Model(
+                state: .error(message: message, showsRetry: true),
+                onRetry: { [weak self] in self?.viewModel?.didTapRetry() }
+            ))
             tableView.isHidden = true
         }
     }

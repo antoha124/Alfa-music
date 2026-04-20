@@ -28,15 +28,15 @@ enum DS {
     }
 
     enum Typography {
-        static func titleLarge() -> UIFont { .systemFont(ofSize: 32, weight: .bold) }
-        static func titleScreen() -> UIFont { .systemFont(ofSize: 20, weight: .semibold) }
-        static func body() -> UIFont { .systemFont(ofSize: 16, weight: .regular) }
-        static func bodyMedium() -> UIFont { .systemFont(ofSize: 16, weight: .medium) }
-        static func caption() -> UIFont { .systemFont(ofSize: 13, weight: .regular) }
-        static func captionSmall() -> UIFont { .systemFont(ofSize: 12, weight: .regular) }
-        static func captionMonospaced() -> UIFont { .monospacedDigitSystemFont(ofSize: 13, weight: .regular) }
-        static func listTitle() -> UIFont { .systemFont(ofSize: 16, weight: .semibold) }
-        static func listSubtitle() -> UIFont { .systemFont(ofSize: 14, weight: .regular) }
+        static let titleLarge = UIFont.systemFont(ofSize: 32, weight: .bold)
+        static let titleScreen = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        static let body = UIFont.systemFont(ofSize: 16, weight: .regular)
+        static let bodyMedium = UIFont.systemFont(ofSize: 16, weight: .medium)
+        static let caption = UIFont.systemFont(ofSize: 13, weight: .regular)
+        static let captionSmall = UIFont.systemFont(ofSize: 12, weight: .regular)
+        static let captionMonospaced = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .regular)
+        static let listTitle = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        static let listSubtitle = UIFont.systemFont(ofSize: 14, weight: .regular)
     }
 
     enum Layout {

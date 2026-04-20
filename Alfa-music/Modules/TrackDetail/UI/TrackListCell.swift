@@ -29,7 +29,7 @@ final class TrackListCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         titleLabel.ds_apply(.bodyMedium)
         subtitleLabel.ds_apply(.captionSecondary)
-        rightLabel.font = DS.Typography.captionMonospaced()
+        rightLabel.font = DS.Typography.captionMonospaced
         rightLabel.textColor = DS.Colors.textSecondary
         accessoryType = .disclosureIndicator
         setup()

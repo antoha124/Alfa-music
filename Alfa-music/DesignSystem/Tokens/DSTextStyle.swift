@@ -14,16 +14,16 @@ enum DSTextStyle {
 
     var font: UIFont {
         switch self {
-        case .titleLarge: return DS.Typography.titleLarge()
-        case .titleScreen: return DS.Typography.titleScreen()
-        case .body: return DS.Typography.body()
-        case .bodyMedium: return DS.Typography.bodyMedium()
-        case .caption: return DS.Typography.caption()
-        case .captionSecondary: return DS.Typography.caption()
-        case .errorField: return DS.Typography.captionSmall()
-        case .errorBanner: return DS.Typography.body()
-        case .listTitle: return DS.Typography.listTitle()
-        case .listSubtitle: return DS.Typography.listSubtitle()
+        case .titleLarge: return DS.Typography.titleLarge
+        case .titleScreen: return DS.Typography.titleScreen
+        case .body: return DS.Typography.body
+        case .bodyMedium: return DS.Typography.bodyMedium
+        case .caption: return DS.Typography.caption
+        case .captionSecondary: return DS.Typography.caption
+        case .errorField: return DS.Typography.captionSmall
+        case .errorBanner: return DS.Typography.body
+        case .listTitle: return DS.Typography.listTitle
+        case .listSubtitle: return DS.Typography.listSubtitle
         }
     }
 
@@ -48,7 +48,7 @@ extension UILabel {
 
 extension UITextField {
     func ds_applyInputTypography() {
-        font = DS.Typography.body()
+        font = DS.Typography.body
         textColor = DS.Colors.textPrimary
     }
 }

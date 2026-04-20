@@ -26,8 +26,12 @@ class AuthViewController: UIViewController, AuthView {
         return label
     }()
 
-    private var loginButton = DSButton(style: .primary)
-    private var guestButton = DSButton(style: .secondary)
+    private var loginButton = DSButton(
+        model: DSButton.Model(title: "Войти", style: .primary, isEnabled: true)
+    )
+    private var guestButton = DSButton(
+        model: DSButton.Model(title: "Войти как гость", style: .secondary, isEnabled: true)
+    )
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,38 +39,27 @@ class AuthViewController: UIViewController, AuthView {
 
         logoLabel.ds_apply(.titleLarge)
 
-        emailField.configure(
-            title: "Email",
-            placeholder: "Email",
-            isSecure: false,
-            keyboardType: .emailAddress,
-            autocapitalizationType: .none,
-            returnKeyType: .next
-        )
-        passwordField.configure(
-            title: "Пароль",
-            placeholder: "Пароль",
-            isSecure: true,
-            keyboardType: .default,
-            autocapitalizationType: .none,
-            returnKeyType: .done
-        )
+        emailField.render(DSFormTextField.Model.email(errorMessage: nil))
+        passwordField.render(DSFormTextField.Model.password(errorMessage: nil))
 
-        loginButton.setTitle("Войти", for: .normal)
-        guestButton.setTitle("Войти как гость", for: .normal)
+        emailField.onEditingChanged = { [weak self] in self?.emailChanged() }
+        passwordField.onEditingChanged = { [weak self] in self?.passwordChanged() }
+        emailField.onReturn = { [weak self] in
+            _ = self?.passwordField.becomeFirstResponder()
+            return false
+        }
+        passwordField.onReturn = { [weak self] in
+            self?.loginTapped()
+            return true
+        }
 
         errorLabel.ds_apply(.errorBanner)
 
         setupLayout()
         setupKeyboardObserver()
 
-        emailField.input.delegate = self
-        passwordField.input.delegate = self
-        loginButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
-        guestButton.addTarget(self, action: #selector(guestTapped), for: .touchUpInside)
-
-        emailField.input.addTarget(self, action: #selector(emailChanged), for: .editingChanged)
-        passwordField.input.addTarget(self, action: #selector(passwordChanged), for: .editingChanged)
+        loginButton.addTouchUpInside(self, action: #selector(loginTapped))
+        guestButton.addTouchUpInside(self, action: #selector(guestTapped))
 
         viewModel?.view = self
         viewModel?.didLoad()
@@ -155,36 +148,36 @@ class AuthViewController: UIViewController, AuthView {
         scrollView.verticalScrollIndicatorInsets.bottom = intersection.height
     }
 
-    @objc private func emailChanged() {
-        var text = emailField.input.text ?? ""
+    private func emailChanged() {
+        var text = emailField.currentText()
         guard !text.isEmpty else {
-            emailField.setErrorText(nil)
+            emailField.render(DSFormTextField.Model.email(errorMessage: nil))
             return
         }
         if !text.contains("@") || !text.contains(".") {
-            emailField.setErrorText("Введите корректный email")
+            emailField.render(DSFormTextField.Model.email(errorMessage: "Введите корректный email"))
         } else {
-            emailField.setErrorText(nil)
+            emailField.render(DSFormTextField.Model.email(errorMessage: nil))
         }
     }
 
-    @objc private func passwordChanged() {
-        var text = passwordField.input.text ?? ""
+    private func passwordChanged() {
+        var text = passwordField.currentText()
         guard !text.isEmpty else {
-            passwordField.setErrorText(nil)
+            passwordField.render(DSFormTextField.Model.password(errorMessage: nil))
             return
         }
         if text.count < 4 {
-            passwordField.setErrorText("Минимум 4 символа")
+            passwordField.render(DSFormTextField.Model.password(errorMessage: "Минимум 4 символа"))
         } else {
-            passwordField.setErrorText(nil)
+            passwordField.render(DSFormTextField.Model.password(errorMessage: nil))
         }
     }
 
     @objc private func loginTapped() {
         viewModel?.didTapLogin(
-            email: emailField.input.text ?? "",
-            password: passwordField.input.text ?? ""
+            email: emailField.currentText(),
+            password: passwordField.currentText()
         )
     }
 
@@ -199,17 +192,5 @@ class AuthViewController: UIViewController, AuthView {
         } else {
             errorLabel.isHidden = true
         }
-    }
-}
-
-extension AuthViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == emailField.input {
-            passwordField.input.becomeFirstResponder()
-        } else {
-            textField.resignFirstResponder()
-            loginTapped()
-        }
-        return true
     }
 }
