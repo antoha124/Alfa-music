@@ -1,78 +1,52 @@
 import UIKit
 
-final class CatalogViewController: UIViewController, CatalogView {
+@MainActor
+final class CatalogViewController: BDUIScreenHostingViewController, CatalogView {
 
     var viewModel: CatalogViewModelProtocol?
-    var session: UserSession?
+    private let screenBuilder = CatalogBDUIScreenBuilder()
+    private var loadMoreTriggered = false
 
-    private var tableView = UITableView(frame: .zero, style: .plain)
-    private var stateView = DSStateContainerView()
+    init() {
+        super.init(
+            loader: BundleBDUIScreenLoader(),
+            registry: BDUIMapperRegistry.makeDefault(),
+            actionBinder: BDUIActionBinder(),
+            actionHandler: BDUIActionHandler()
+        )
+    }
 
-    private lazy var refreshControl: UIRefreshControl = {
-        let control = UIRefreshControl()
-        control.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
-        control.tintColor = DS.Colors.primary
-        return control
-    }()
-
-    private var imageLoader: ImageLoaderProtocol = ImageLoader()
-    private var listManager: CatalogListManager?
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        nil
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = DS.Colors.background
         title = "Каталог"
-
-        setupUI()
         setupSearch()
-
-        setupList()
+        setupCallbacks()
 
         viewModel?.view = self
         viewModel?.didLoad()
     }
 
-    private func setupUI() {
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.refreshControl = refreshControl
-        tableView.backgroundColor = DS.Colors.background
-        view.addSubview(tableView)
-
-        stateView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stateView)
-
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            stateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            stateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            stateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            stateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-
-        stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
-    }
-
-    private func setupList() {
-        tableView.register(AlbumCell.self, forCellReuseIdentifier: AlbumCell.reuseIdentifier)
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = DS.Layout.CatalogList.estimatedRowHeight
-        tableView.separatorInset = UIEdgeInsets(
-            top: 0,
-            left: DS.Layout.CatalogList.separatorLeadingInset,
-            bottom: 0,
-            right: 0
-        )
-
-        let manager = CatalogListManager(imageLoader: imageLoader)
-        manager.delegate = self
-        tableView.dataSource = manager
-        tableView.delegate = manager
-        tableView.prefetchDataSource = manager
-        listManager = manager
+    private func setupCallbacks() {
+        onCallback = { [weak self] callbackID in
+            guard let self else { return }
+            if callbackID == "catalog_retry_tap" {
+                viewModel?.didTapRetry()
+                return
+            }
+            if callbackID == "catalog_load_more_tap" {
+                viewModel?.didLoadMore()
+                return
+            }
+            if callbackID.hasPrefix("catalog_open_") {
+                let albumID = String(callbackID.dropFirst("catalog_open_".count))
+                viewModel?.didSelectAlbum(id: albumID)
+            }
+        }
     }
 
     private func setupSearch() {
@@ -95,52 +69,48 @@ final class CatalogViewController: UIViewController, CatalogView {
     func render(_ state: CatalogViewState) {
         switch state.loadingState {
         case .initial:
-            refreshControl.endRefreshing()
-            stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
-            tableView.isHidden = true
-
+            render(templateName: "catalog_loading", context: [:])
         case .loading:
-            stateView.render(DSStateContainerView.Model(state: .loading(message: nil), onRetry: nil))
-            tableView.isHidden = true
+            render(templateName: "catalog_loading", context: [:])
         case .content(let items):
-            refreshControl.endRefreshing()
-            stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
-            tableView.isHidden = false
-            listManager?.setItems(items, in: tableView)
+            loadMoreTriggered = false
+            render(screen: screenBuilder.makeScreen(items: items))
+            bindScrollPaginationIfNeeded()
         case .empty:
-            refreshControl.endRefreshing()
-            stateView.render(DSStateContainerView.Model(
-                state: .empty(title: "Пока пусто", message: "Список пуст или ничего не найдено по запросу."),
-                onRetry: nil
-            ))
-            tableView.isHidden = true
+            render(
+                templateName: "catalog_empty",
+                context: ["emptyMessage": "Список пуст или ничего не найдено по запросу."]
+            )
         case .error(let message):
-            refreshControl.endRefreshing()
-            stateView.render(DSStateContainerView.Model(
-                state: .error(message: message, showsRetry: true),
-                onRetry: { [weak self] in self?.viewModel?.didTapRetry() }
-            ))
-            tableView.isHidden = true
+            render(templateName: "catalog_error", context: ["errorMessage": message])
         }
     }
 
-    @objc private func didPullToRefresh() {
-        viewModel?.clearCache()
-    }
-}
-
-extension CatalogViewController: CatalogListManagerDelegate {
-    func didSelectAlbum(id: String) {
-        viewModel?.didSelectAlbum(id: id)
-    }
-
-    func didDisplayItem(at index: Int, totalCount: Int) {
-        viewModel?.didDisplayItem(at: index, totalCount: totalCount)
+    private func bindScrollPaginationIfNeeded() {
+        guard let scrollView = renderedView(withID: "catalog_root") as? UIScrollView else { return }
+        scrollView.delegate = self
     }
 }
 
 extension CatalogViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         viewModel?.didSearch(query: searchController.searchBar.text ?? "")
+    }
+}
+
+extension CatalogViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let threshold: CGFloat = 120
+        let offsetY = scrollView.contentOffset.y
+        let maxOffsetY = scrollView.contentSize.height - scrollView.bounds.height
+        guard maxOffsetY > 0 else { return }
+
+        if offsetY > maxOffsetY - threshold {
+            guard !loadMoreTriggered else { return }
+            loadMoreTriggered = true
+            viewModel?.didLoadMore()
+        } else if offsetY < maxOffsetY - threshold * 2 {
+            loadMoreTriggered = false
+        }
     }
 }

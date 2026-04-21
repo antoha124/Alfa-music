@@ -20,7 +20,6 @@ class CatalogCoordinator: Coordinator, CatalogCoordinatorProtocol {
         let viewModel: CatalogViewModel = CatalogViewModel(useCase: service, coordinator: self)
 
         let viewController = CatalogViewController()
-        viewController.session = session
         viewController.viewModel = viewModel
 
         viewModel.view = viewController

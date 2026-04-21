@@ -27,6 +27,7 @@ enum BDUIComponentType: String, Decodable {
     case vStack
     case hStack
     case container
+    case image
     case label
     case button
     case textField
@@ -61,6 +62,14 @@ struct BDUIContainerContentDTO: Decodable {
     let cornerRadius: BDUICornerRadiusToken?
 }
 
+struct BDUIImageContentDTO: Decodable {
+    let url: String?
+    let width: Double?
+    let height: Double?
+    let cornerRadius: BDUICornerRadiusToken?
+    let contentMode: BDUIImageContentModeToken?
+}
+
 struct BDUITextFieldContentDTO: Decodable {
     let title: String
     let placeholder: String
@@ -85,6 +94,7 @@ enum BDUIContentDTO {
     case button(BDUIButtonContentDTO)
     case stack(BDUIStackContentDTO)
     case container(BDUIContainerContentDTO)
+    case image(BDUIImageContentDTO)
     case textField(BDUITextFieldContentDTO)
     case spacer(BDUISpacerContentDTO)
     case state(BDUIStateContentDTO)
@@ -145,6 +155,17 @@ struct BDUINodeDTO: Decodable {
             content = .container(
                 try container.decodeIfPresent(BDUIContainerContentDTO.self, forKey: .content)
                     ?? BDUiDefaults.container
+            )
+        case .image:
+            content = .image(
+                try container.decodeIfPresent(BDUIImageContentDTO.self, forKey: .content)
+                    ?? BDUIImageContentDTO(
+                        url: nil,
+                        width: nil,
+                        height: nil,
+                        cornerRadius: nil,
+                        contentMode: nil
+                    )
             )
         case .textField:
             content = .textField(try container.decode(BDUITextFieldContentDTO.self, forKey: .content))
@@ -276,4 +297,16 @@ enum BDUIStateStyleToken: String, Decodable {
     case loading
     case empty
     case error
+}
+
+enum BDUIImageContentModeToken: String, Decodable {
+    case scaleAspectFill
+    case scaleAspectFit
+
+    var value: UIView.ContentMode {
+        switch self {
+        case .scaleAspectFill: return .scaleAspectFill
+        case .scaleAspectFit: return .scaleAspectFit
+        }
+    }
 }

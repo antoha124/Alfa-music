@@ -31,6 +31,7 @@ final class BDUIMapperRegistry {
         registry.register(VerticalStackNodeMapper())
         registry.register(HorizontalStackNodeMapper())
         registry.register(ContainerNodeMapper())
+        registry.register(ImageNodeMapper())
         registry.register(LabelNodeMapper())
         registry.register(ButtonNodeMapper())
         registry.register(TextFieldNodeMapper())
@@ -231,6 +232,48 @@ final class ContainerNodeMapper: BDUINodeMapping {
         ])
 
         return container
+    }
+}
+
+@MainActor
+final class ImageNodeMapper: BDUINodeMapping {
+    let supportedType: BDUIComponentType = .image
+    private let imageLoader: ImageLoaderProtocol = ImageLoader()
+
+    func map(node: BDUINodeDTO, context: BDUINodeMappingContext) -> UIView? {
+        guard case .image(let content)? = node.content else { return nil }
+
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = content.contentMode?.value ?? .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = content.cornerRadius?.value ?? 0
+        imageView.backgroundColor = DS.Colors.elevated
+        imageView.tintColor = DS.Colors.textSecondary
+        imageView.image = DSIcon.template(DSIcon.Name.photo, size: .m)
+
+        if let width = content.width {
+            imageView.widthAnchor.constraint(equalToConstant: CGFloat(width)).isActive = true
+        }
+        if let height = content.height {
+            imageView.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
+        }
+
+        if
+            let urlString = content.url,
+            let url = URL(string: urlString)
+        {
+            Task { @MainActor in
+                if let image = try? await imageLoader.loadImage(url: url) {
+                    imageView.image = image
+                    imageView.tintColor = nil
+                }
+            }
+        } else {
+            imageView.image = DSIcon.template(DSIcon.Name.musicNote, size: .m)
+        }
+
+        return imageView
     }
 }
 
