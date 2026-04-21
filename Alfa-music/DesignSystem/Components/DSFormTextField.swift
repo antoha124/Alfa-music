@@ -90,6 +90,10 @@ final class DSFormTextField: UIView {
         textField.text ?? ""
     }
 
+    func setText(_ text: String?) {
+        textField.text = text
+    }
+
     @discardableResult
     override func becomeFirstResponder() -> Bool {
         textField.becomeFirstResponder()

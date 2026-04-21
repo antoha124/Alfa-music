@@ -1,6 +1,5 @@
 import UIKit
 
-/// Контейнер состояний экрана: полная конфигурация передаётся одним `Model` при `render`.
 final class DSStateContainerView: UIView {
 
     enum State: Equatable {

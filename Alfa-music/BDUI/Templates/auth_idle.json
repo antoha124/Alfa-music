@@ -1,0 +1,130 @@
+{
+  "root": {
+    "id": "auth_root",
+    "type": "scroll",
+    "content": {
+      "spacing": "l",
+      "padding": "m",
+      "backgroundColor": "background"
+    },
+    "subviews": [
+      {
+        "id": "auth_brand_container",
+        "type": "container",
+        "content": {
+          "backgroundColor": "elevated",
+          "padding": "m",
+          "cornerRadius": "l"
+        },
+        "subviews": [
+          {
+            "id": "auth_brand_stack",
+            "type": "vStack",
+            "content": {
+              "spacing": "s"
+            },
+            "subviews": [
+              {
+                "id": "auth_title",
+                "type": "label",
+                "content": {
+                  "text": "Alfa Music",
+                  "textStyle": "titleLarge",
+                  "color": "textPrimary",
+                  "alignment": "center",
+                  "numberOfLines": 1
+                }
+              },
+              {
+                "id": "auth_subtitle",
+                "type": "label",
+                "content": {
+                  "text": "Войдите, чтобы продолжить",
+                  "textStyle": "body",
+                  "color": "textSecondary",
+                  "alignment": "center",
+                  "numberOfLines": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "auth_form_container",
+        "type": "container",
+        "content": {
+          "backgroundColor": "elevated",
+          "padding": "m",
+          "cornerRadius": "l"
+        },
+        "subviews": [
+          {
+            "id": "auth_form_stack",
+            "type": "vStack",
+            "content": {
+              "spacing": "m"
+            },
+            "subviews": [
+              {
+                "id": "auth_email_field",
+                "type": "textField",
+                "content": {
+                  "title": "Email",
+                  "placeholder": "Введите email",
+                  "text": null,
+                  "errorMessage": null,
+                  "isSecure": false
+                }
+              },
+              {
+                "id": "auth_password_field",
+                "type": "textField",
+                "content": {
+                  "title": "Пароль",
+                  "placeholder": "Введите пароль",
+                  "text": null,
+                  "errorMessage": null,
+                  "isSecure": true
+                }
+              },
+              {
+                "id": "auth_login_button",
+                "type": "button",
+                "content": {
+                  "title": "Войти",
+                  "style": "primary",
+                  "isEnabled": true
+                },
+                "action": {
+                  "type": "callback",
+                  "id": "auth_login_tap"
+                }
+              },
+              {
+                "id": "auth_guest_button",
+                "type": "button",
+                "content": {
+                  "title": "Войти как гость",
+                  "style": "secondary",
+                  "isEnabled": true
+                },
+                "action": {
+                  "type": "callback",
+                  "id": "auth_guest_tap"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "auth_bottom_space",
+        "type": "spacer",
+        "content": {
+          "height": 120
+        }
+      }
+    ]
+  }
+}

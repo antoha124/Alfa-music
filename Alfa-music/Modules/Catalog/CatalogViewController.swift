@@ -9,10 +9,10 @@ final class CatalogViewController: UIViewController, CatalogView {
     private var stateView = DSStateContainerView()
 
     private lazy var refreshControl: UIRefreshControl = {
-        var c = UIRefreshControl()
-        c.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
-        c.tintColor = DS.Colors.primary
-        return c
+        let control = UIRefreshControl()
+        control.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        control.tintColor = DS.Colors.primary
+        return control
     }()
 
     private var imageLoader: ImageLoaderProtocol = ImageLoader()
@@ -24,8 +24,9 @@ final class CatalogViewController: UIViewController, CatalogView {
         title = "Каталог"
 
         setupUI()
-        setupList()
         setupSearch()
+
+        setupList()
 
         viewModel?.view = self
         viewModel?.didLoad()
@@ -66,7 +67,7 @@ final class CatalogViewController: UIViewController, CatalogView {
             right: 0
         )
 
-        var manager = CatalogListManager(imageLoader: imageLoader)
+        let manager = CatalogListManager(imageLoader: imageLoader)
         manager.delegate = self
         tableView.dataSource = manager
         tableView.delegate = manager
@@ -75,7 +76,7 @@ final class CatalogViewController: UIViewController, CatalogView {
     }
 
     private func setupSearch() {
-        var search = UISearchController(searchResultsController: nil)
+        let search = UISearchController(searchResultsController: nil)
         search.obscuresBackgroundDuringPresentation = false
         search.searchResultsUpdater = self
         search.searchBar.placeholder = "Поиск по альбомам"
@@ -92,31 +93,29 @@ final class CatalogViewController: UIViewController, CatalogView {
     }
 
     func render(_ state: CatalogViewState) {
-        refreshControl.endRefreshing()
-
         switch state.loadingState {
         case .initial:
+            refreshControl.endRefreshing()
             stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
             tableView.isHidden = true
 
         case .loading:
             stateView.render(DSStateContainerView.Model(state: .loading(message: nil), onRetry: nil))
             tableView.isHidden = true
-
-        case .content:
+        case .content(let items):
+            refreshControl.endRefreshing()
             stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
             tableView.isHidden = false
-            listManager?.setItems(state.contentItems ?? [], in: tableView)
-
+            listManager?.setItems(items, in: tableView)
         case .empty:
+            refreshControl.endRefreshing()
             stateView.render(DSStateContainerView.Model(
                 state: .empty(title: "Пока пусто", message: "Список пуст или ничего не найдено по запросу."),
                 onRetry: nil
             ))
             tableView.isHidden = true
-
-        case .error:
-            var message = state.errorMessage ?? "Ошибка"
+        case .error(let message):
+            refreshControl.endRefreshing()
             stateView.render(DSStateContainerView.Model(
                 state: .error(message: message, showsRetry: true),
                 onRetry: { [weak self] in self?.viewModel?.didTapRetry() }

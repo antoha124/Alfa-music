@@ -28,8 +28,15 @@ class AuthViewModel: AuthViewModelProtocol {
         let email = email.trimmingCharacters(in: .whitespaces)
         let password = password.trimmingCharacters(in: .whitespaces)
 
-        guard !email.isEmpty, !password.isEmpty else {
-            viewState = AuthViewState(isLoading: false, errorText: "Введите email и пароль")
+        let emailError = validateEmail(email)
+        let passwordError = validatePassword(password)
+        guard emailError == nil, passwordError == nil else {
+            viewState = AuthViewState(
+                isLoading: false,
+                emailError: emailError,
+                passwordError: passwordError,
+                errorText: nil
+            )
             return
         }
 
@@ -37,7 +44,12 @@ class AuthViewModel: AuthViewModelProtocol {
             let session = try service.login(LoginRequest(email: email, password: password))
             coordinator?.showCatalog(session: session)
         } catch AuthError.invalidCredentials {
-            viewState = AuthViewState(isLoading: false, errorText: "Неверный email или пароль")
+            viewState = AuthViewState(
+                isLoading: false,
+                emailError: nil,
+                passwordError: "Неверный email или пароль",
+                errorText: "Неверный email или пароль"
+            )
         } catch {
             viewState = AuthViewState(isLoading: false, errorText: "Ошибка: \(error.localizedDescription)")
         }
@@ -50,5 +62,19 @@ class AuthViewModel: AuthViewModelProtocol {
         } catch {
             viewState = AuthViewState(isLoading: false, errorText: "Не удалось войти как гость")
         }
+    }
+
+    private func validateEmail(_ email: String) -> String? {
+        guard !email.isEmpty else { return "Введите email" }
+        guard email.contains("@"), email.contains(".") else {
+            return "Введите корректный email"
+        }
+        return nil
+    }
+
+    private func validatePassword(_ password: String) -> String? {
+        guard !password.isEmpty else { return "Введите пароль" }
+        guard password.count >= 4 else { return "Минимум 4 символа" }
+        return nil
     }
 }

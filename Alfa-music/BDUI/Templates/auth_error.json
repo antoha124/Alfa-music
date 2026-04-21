@@ -1,0 +1,95 @@
+{
+  "root": {
+    "id": "auth_error_root",
+    "type": "scroll",
+    "content": {
+      "spacing": "m",
+      "padding": "m",
+      "backgroundColor": "background"
+    },
+    "subviews": [
+      {
+        "id": "auth_error_state",
+        "type": "state",
+        "content": {
+          "style": "error",
+          "title": "Ошибка",
+          "message": "{{errorMessage}}",
+          "actionTitle": "Попробовать снова"
+        },
+        "action": {
+          "type": "callback",
+          "id": "auth_retry_tap"
+        }
+      },
+      {
+        "id": "auth_error_form_container",
+        "type": "container",
+        "content": {
+          "backgroundColor": "elevated",
+          "padding": "m",
+          "cornerRadius": "l"
+        },
+        "subviews": [
+          {
+            "id": "auth_error_form_stack",
+            "type": "vStack",
+            "content": {
+              "spacing": "m"
+            },
+            "subviews": [
+              {
+                "id": "auth_email_field",
+                "type": "textField",
+                "content": {
+                  "title": "Email",
+                  "placeholder": "Введите email",
+                  "text": null,
+                  "errorMessage": null,
+                  "isSecure": false
+                }
+              },
+              {
+                "id": "auth_password_field",
+                "type": "textField",
+                "content": {
+                  "title": "Пароль",
+                  "placeholder": "Введите пароль",
+                  "text": null,
+                  "errorMessage": null,
+                  "isSecure": true
+                }
+              },
+              {
+                "id": "auth_login_button",
+                "type": "button",
+                "content": {
+                  "title": "Войти снова",
+                  "style": "primary",
+                  "isEnabled": true
+                },
+                "action": {
+                  "type": "callback",
+                  "id": "auth_login_tap"
+                }
+              },
+              {
+                "id": "auth_guest_button",
+                "type": "button",
+                "content": {
+                  "title": "Войти как гость",
+                  "style": "secondary",
+                  "isEnabled": true
+                },
+                "action": {
+                  "type": "callback",
+                  "id": "auth_guest_tap"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
