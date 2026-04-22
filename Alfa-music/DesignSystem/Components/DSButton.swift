@@ -13,7 +13,7 @@ final class DSButton: UIView {
         var isEnabled: Bool
     }
 
-    private var button = UIButton(type: .system)
+    private let button = UIButton(type: .system)
 
     init(model: Model) {
         super.init(frame: .zero)
@@ -31,7 +31,7 @@ final class DSButton: UIView {
             heightAnchor.constraint(equalToConstant: DS.Layout.buttonHeight)
         ])
         button.backgroundColor = .clear
-        render(model)
+        apply(model)
     }
 
     override var intrinsicContentSize: CGSize {
@@ -45,7 +45,7 @@ final class DSButton: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func render(_ model: Model) {
+    private func apply(_ model: Model) {
         button.setTitle(model.title, for: .normal)
         button.isEnabled = model.isEnabled
         applyStyle(style: model.style, isEnabled: model.isEnabled)

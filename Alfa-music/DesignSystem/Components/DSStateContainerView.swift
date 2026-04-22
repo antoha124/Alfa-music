@@ -1,5 +1,6 @@
 import UIKit
 
+
 final class DSStateContainerView: UIView {
 
     enum State: Equatable {
@@ -23,8 +24,8 @@ final class DSStateContainerView: UIView {
     private var messageLabel = UILabel()
     private var retryButton = DSButton(model: DSButton.Model(title: "Повторить", style: .primary, isEnabled: true))
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(model: Model) {
+        super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
         isUserInteractionEnabled = true
 
@@ -61,6 +62,13 @@ final class DSStateContainerView: UIView {
             iconView.widthAnchor.constraint(equalToConstant: DSIcon.Size.l.rawValue),
             iconView.heightAnchor.constraint(equalToConstant: DSIcon.Size.l.rawValue)
         ])
+
+        apply(model)
+    }
+
+    @available(*, unavailable)
+    override init(frame: CGRect) {
+        fatalError("Use init(model:) instead")
     }
 
     @available(*, unavailable)
@@ -68,7 +76,7 @@ final class DSStateContainerView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func render(_ model: Model) {
+    private func apply(_ model: Model) {
         onRetry = model.onRetry
         activity.stopAnimating()
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
