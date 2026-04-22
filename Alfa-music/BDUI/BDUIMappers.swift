@@ -366,7 +366,6 @@ final class StateNodeMapper: BDUINodeMapping {
 
     func map(node: BDUINodeDTO, context: BDUINodeMappingContext) -> UIView? {
         guard case .state(let content)? = node.content else { return nil }
-        let view = DSStateContainerView()
         let state: DSStateContainerView.State
         switch content.style {
         case .hidden:
@@ -385,7 +384,8 @@ final class StateNodeMapper: BDUINodeMapping {
             )
         }
 
-        view.render(
+        let view = DSStateContainerView(
+            model:
             DSStateContainerView.Model(
                 state: state,
                 onRetry: { [weak context] in

@@ -4,7 +4,6 @@ import UIKit
 final class CatalogViewController: BDUIScreenHostingViewController, CatalogView {
 
     var viewModel: CatalogViewModelProtocol?
-    private let screenBuilder = CatalogBDUIScreenBuilder()
     private var loadMoreTriggered = false
 
     init() {
@@ -74,7 +73,13 @@ final class CatalogViewController: BDUIScreenHostingViewController, CatalogView 
             render(templateName: "catalog_loading", context: [:])
         case .content(let items):
             loadMoreTriggered = false
-            render(screen: screenBuilder.makeScreen(items: items))
+            render(
+                templateName: "catalog_content",
+                context: [
+                    "itemsCount": "\(items.count)",
+                    "albumNodes": makeAlbumNodesJSON(items)
+                ]
+            )
             bindScrollPaginationIfNeeded()
         case .empty:
             render(
@@ -82,13 +87,104 @@ final class CatalogViewController: BDUIScreenHostingViewController, CatalogView 
                 context: ["emptyMessage": "Список пуст или ничего не найдено по запросу."]
             )
         case .error(let message):
-            render(templateName: "catalog_error", context: ["errorMessage": message])
+            render(
+                templateName: "catalog_error",
+                context: ["errorMessage": Self.escapeForJSON(message)]
+            )
         }
     }
 
     private func bindScrollPaginationIfNeeded() {
         guard let scrollView = renderedView(withID: "catalog_root") as? UIScrollView else { return }
         scrollView.delegate = self
+    }
+
+    private func makeAlbumNodesJSON(_ items: [AlbumCellViewModel]) -> String {
+        let nodes = items.map(makeAlbumNodeDictionary(_:))
+        guard
+            let data = try? JSONSerialization.data(withJSONObject: nodes),
+            let json = String(data: data, encoding: .utf8)
+        else {
+            return "[]"
+        }
+        return json
+    }
+
+    private func makeAlbumNodeDictionary(_ item: AlbumCellViewModel) -> [String: Any] {
+        let imageURL: Any = item.artworkUrl ?? NSNull()
+        return [
+            "id": "catalog_album_\(item.id)",
+            "type": "container",
+            "content": [
+                "backgroundColor": "elevated",
+                "padding": "m",
+                "cornerRadius": "m"
+            ],
+            "subviews": [
+                [
+                    "id": "catalog_album_row_\(item.id)",
+                    "type": "hStack",
+                    "content": [
+                        "spacing": "m"
+                    ],
+                    "subviews": [
+                        [
+                            "id": "catalog_album_image_\(item.id)",
+                            "type": "image",
+                            "content": [
+                                "url": imageURL,
+                                "width": Double(DS.Layout.AlbumCell.artworkSize),
+                                "height": Double(DS.Layout.AlbumCell.artworkSize),
+                                "cornerRadius": "s",
+                                "contentMode": "scaleAspectFill"
+                            ]
+                        ],
+                        [
+                            "id": "catalog_album_text_\(item.id)",
+                            "type": "vStack",
+                            "content": [
+                                "spacing": "xs"
+                            ],
+                            "subviews": [
+                                [
+                                    "id": "catalog_album_title_\(item.id)",
+                                    "type": "label",
+                                    "content": [
+                                        "text": item.title,
+                                        "textStyle": "listTitle",
+                                        "color": "textPrimary",
+                                        "alignment": "left",
+                                        "numberOfLines": 0
+                                    ]
+                                ],
+                                [
+                                    "id": "catalog_album_subtitle_\(item.id)",
+                                    "type": "label",
+                                    "content": [
+                                        "text": "\(item.artistName) • \(item.releaseYear)",
+                                        "textStyle": "listSubtitle",
+                                        "color": "textSecondary",
+                                        "alignment": "left",
+                                        "numberOfLines": 0
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            "action": [
+                "type": "callback",
+                "id": "catalog_open_\(item.id)"
+            ]
+        ]
+    }
+
+    private static func escapeForJSON(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
     }
 }
 

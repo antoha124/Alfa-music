@@ -4,7 +4,6 @@ import UIKit
 final class AuthViewController: BDUIScreenHostingViewController, AuthView {
 
     var viewModel: AuthViewModelProtocol?
-    private let screenBuilder = AuthBDUIScreenBuilder()
 
     init() {
         super.init(
@@ -45,6 +44,21 @@ final class AuthViewController: BDUIScreenHostingViewController, AuthView {
     }
 
     func render(_ state: AuthViewState) {
-        render(screen: screenBuilder.makeScreen(state: state))
+        if let errorText = state.errorText, !errorText.isEmpty {
+            render(
+                templateName: "auth_error",
+                context: ["errorMessage": Self.escapeForJSON(errorText)]
+            )
+            return
+        }
+
+        render(templateName: "auth_idle", context: [:])
+    }
+
+    private static func escapeForJSON(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
     }
 }

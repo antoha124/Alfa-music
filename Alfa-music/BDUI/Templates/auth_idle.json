@@ -3,7 +3,7 @@
     "id": "auth_root",
     "type": "scroll",
     "content": {
-      "spacing": "l",
+      "spacing": "xl",
       "padding": "m",
       "backgroundColor": "background"
     },
@@ -21,7 +21,7 @@
             "id": "auth_brand_stack",
             "type": "vStack",
             "content": {
-              "spacing": "s"
+              "spacing": "xl"
             },
             "subviews": [
               {
@@ -63,7 +63,7 @@
             "id": "auth_form_stack",
             "type": "vStack",
             "content": {
-              "spacing": "m"
+              "spacing": "l"
             },
             "subviews": [
               {

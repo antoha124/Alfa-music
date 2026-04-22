@@ -13,6 +13,11 @@ final class DSStateContainerView: UIView {
     struct Model {
         var state: State
         var onRetry: (() -> Void)?
+
+        init(state: State, onRetry: (() -> Void)?) {
+            self.state = state
+            self.onRetry = onRetry
+        }
     }
 
     private var onRetry: (() -> Void)?
