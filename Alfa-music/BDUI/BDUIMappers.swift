@@ -325,11 +325,11 @@ final class TextFieldNodeMapper: BDUINodeMapping {
 
     func map(node: BDUINodeDTO, context: BDUINodeMappingContext) -> UIView? {
         guard case .textField(let content)? = node.content else { return nil }
-        let field = DSFormTextField()
-        field.render(
-            DSFormTextField.Model(
+        let field = DSFormTextField(
+            model: DSFormTextField.Model(
                 title: content.title,
                 placeholder: content.placeholder,
+                text: content.text,
                 errorMessage: content.errorMessage,
                 isSecure: content.isSecure ?? false,
                 keyboardType: .default,
@@ -337,7 +337,6 @@ final class TextFieldNodeMapper: BDUINodeMapping {
                 returnKeyType: .default
             )
         )
-        field.setText(content.text)
         return field
     }
 }
