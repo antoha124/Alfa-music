@@ -5,6 +5,7 @@ final class DSFormTextField: UIView {
     struct Model {
         var title: String
         var placeholder: String
+        var text: String?
         var errorMessage: String?
         var isSecure: Bool
         var keyboardType: UIKeyboardType
@@ -20,8 +21,8 @@ final class DSFormTextField: UIView {
 
     var onReturn: (() -> Bool)?
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(model: Model) {
+        super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.ds_apply(.caption)
@@ -58,6 +59,13 @@ final class DSFormTextField: UIView {
             stack.bottomAnchor.constraint(equalTo: bottomAnchor),
             textField.heightAnchor.constraint(equalToConstant: DS.Layout.textFieldHeight)
         ])
+
+        apply(model)
+    }
+
+    @available(*, unavailable)
+    override init(frame: CGRect) {
+        fatalError("Use init(model:) instead")
     }
 
     @available(*, unavailable)
@@ -65,7 +73,7 @@ final class DSFormTextField: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func render(_ model: Model) {
+    private func apply(_ model: Model) {
         titleLabel.text = model.title
         textField.attributedPlaceholder = NSAttributedString(
             string: model.placeholder,
@@ -74,6 +82,7 @@ final class DSFormTextField: UIView {
                 .font: DS.Typography.body
             ]
         )
+        textField.text = model.text
         textField.isSecureTextEntry = model.isSecure
         textField.keyboardType = model.keyboardType
         textField.autocapitalizationType = model.autocapitalizationType
@@ -112,10 +121,14 @@ extension DSFormTextField: UITextFieldDelegate {
 }
 
 extension DSFormTextField.Model {
-    static func email(errorMessage: String?) -> DSFormTextField.Model {
+    static func email(
+        text: String? = nil,
+        errorMessage: String?
+    ) -> DSFormTextField.Model {
         DSFormTextField.Model(
             title: "Email",
             placeholder: "Email",
+            text: text,
             errorMessage: errorMessage,
             isSecure: false,
             keyboardType: .emailAddress,
@@ -124,10 +137,14 @@ extension DSFormTextField.Model {
         )
     }
 
-    static func password(errorMessage: String?) -> DSFormTextField.Model {
+    static func password(
+        text: String? = nil,
+        errorMessage: String?
+    ) -> DSFormTextField.Model {
         DSFormTextField.Model(
             title: "Пароль",
             placeholder: "Пароль",
+            text: text,
             errorMessage: errorMessage,
             isSecure: true,
             keyboardType: .default,

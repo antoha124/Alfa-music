@@ -6,7 +6,7 @@ final class CatalogViewController: UIViewController, CatalogView {
     var session: UserSession?
 
     private var tableView = UITableView(frame: .zero, style: .plain)
-    private var stateView = DSStateContainerView()
+    private var stateView = DSStateContainerView(model: DSStateContainerView.Model(state: .hidden, onRetry: nil))
 
     private lazy var refreshControl: UIRefreshControl = {
         var c = UIRefreshControl()
@@ -52,7 +52,9 @@ final class CatalogViewController: UIViewController, CatalogView {
             stateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
+        applyStateView(
+            DSStateContainerView.Model(state: .hidden, onRetry: nil)
+        )
     }
 
     private func setupList() {
@@ -96,20 +98,26 @@ final class CatalogViewController: UIViewController, CatalogView {
 
         switch state.loadingState {
         case .initial:
-            stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
+            applyStateView(
+                DSStateContainerView.Model(state: .hidden, onRetry: nil)
+            )
             tableView.isHidden = true
 
         case .loading:
-            stateView.render(DSStateContainerView.Model(state: .loading(message: nil), onRetry: nil))
+            applyStateView(
+                DSStateContainerView.Model(state: .loading(message: nil), onRetry: nil)
+            )
             tableView.isHidden = true
 
         case .content:
-            stateView.render(DSStateContainerView.Model(state: .hidden, onRetry: nil))
+            applyStateView(
+                DSStateContainerView.Model(state: .hidden, onRetry: nil)
+            )
             tableView.isHidden = false
             listManager?.setItems(state.contentItems ?? [], in: tableView)
 
         case .empty:
-            stateView.render(DSStateContainerView.Model(
+            applyStateView(DSStateContainerView.Model(
                 state: .empty(title: "Пока пусто", message: "Список пуст или ничего не найдено по запросу."),
                 onRetry: nil
             ))
@@ -117,12 +125,25 @@ final class CatalogViewController: UIViewController, CatalogView {
 
         case .error:
             var message = state.errorMessage ?? "Ошибка"
-            stateView.render(DSStateContainerView.Model(
+            applyStateView(DSStateContainerView.Model(
                 state: .error(message: message, showsRetry: true),
                 onRetry: { [weak self] in self?.viewModel?.didTapRetry() }
             ))
             tableView.isHidden = true
         }
+    }
+
+    private func applyStateView(_ model: DSStateContainerView.Model) {
+        stateView.removeFromSuperview()
+        stateView = DSStateContainerView(model: model)
+        stateView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stateView)
+        NSLayoutConstraint.activate([
+            stateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            stateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            stateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
     }
 
     @objc private func didPullToRefresh() {

@@ -14,8 +14,8 @@ class AuthViewController: UIViewController, AuthView {
         return label
     }()
 
-    private var emailField = DSFormTextField()
-    private var passwordField = DSFormTextField()
+    private var emailField = DSFormTextField(model: DSFormTextField.Model.email(errorMessage: nil))
+    private var passwordField = DSFormTextField(model: DSFormTextField.Model.password(errorMessage: nil))
 
     private var errorLabel: UILabel = {
         var label = UILabel()
@@ -39,11 +39,6 @@ class AuthViewController: UIViewController, AuthView {
 
         logoLabel.ds_apply(.titleLarge)
 
-        emailField.render(DSFormTextField.Model.email(errorMessage: nil))
-        passwordField.render(DSFormTextField.Model.password(errorMessage: nil))
-
-        emailField.onEditingChanged = { [weak self] in self?.emailChanged() }
-        passwordField.onEditingChanged = { [weak self] in self?.passwordChanged() }
         emailField.onReturn = { [weak self] in
             _ = self?.passwordField.becomeFirstResponder()
             return false
@@ -146,32 +141,6 @@ class AuthViewController: UIViewController, AuthView {
         var intersection = view.bounds.intersection(keyboardInView)
         scrollView.contentInset.bottom = intersection.height
         scrollView.verticalScrollIndicatorInsets.bottom = intersection.height
-    }
-
-    private func emailChanged() {
-        var text = emailField.currentText()
-        guard !text.isEmpty else {
-            emailField.render(DSFormTextField.Model.email(errorMessage: nil))
-            return
-        }
-        if !text.contains("@") || !text.contains(".") {
-            emailField.render(DSFormTextField.Model.email(errorMessage: "Введите корректный email"))
-        } else {
-            emailField.render(DSFormTextField.Model.email(errorMessage: nil))
-        }
-    }
-
-    private func passwordChanged() {
-        var text = passwordField.currentText()
-        guard !text.isEmpty else {
-            passwordField.render(DSFormTextField.Model.password(errorMessage: nil))
-            return
-        }
-        if text.count < 4 {
-            passwordField.render(DSFormTextField.Model.password(errorMessage: "Минимум 4 символа"))
-        } else {
-            passwordField.render(DSFormTextField.Model.password(errorMessage: nil))
-        }
     }
 
     @objc private func loginTapped() {
