@@ -2,30 +2,27 @@ import UIKit
 
 final class AlbumCell: UITableViewCell {
 
-    static let reuseIdentifier = "AlbumCell"
+    static var reuseIdentifier = "AlbumCell"
 
-    private let artworkImageView: UIImageView = {
-        let v = UIImageView()
+    private var artworkImageView: UIImageView = {
+        var v = UIImageView()
         v.contentMode = .scaleAspectFill
         v.clipsToBounds = true
-        v.layer.cornerRadius = 8
+        v.layer.cornerRadius = DS.Radius.s
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .secondarySystemBackground
+        v.backgroundColor = DS.Colors.elevated
         return v
     }()
 
-    private let titleLabel: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .semibold)
+    private var titleLabel: UILabel = {
+        var l = UILabel()
         l.numberOfLines = 2
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
 
-    private let subtitleLabel: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 14)
-        l.textColor = .secondaryLabel
+    private var subtitleLabel: UILabel = {
+        var l = UILabel()
         l.numberOfLines = 2
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -35,9 +32,12 @@ final class AlbumCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        titleLabel.ds_apply(.listTitle)
+        subtitleLabel.ds_apply(.listSubtitle)
         setupLayout()
         accessoryType = .disclosureIndicator
         selectionStyle = .default
+        tintColor = DS.Colors.primary
     }
 
     @available(*, unavailable)
@@ -59,21 +59,24 @@ final class AlbumCell: UITableViewCell {
         subtitleLabel.text = "\(vm.artistName) • \(vm.releaseYear)"
 
         guard
-            let urlString = vm.artworkUrl,
-            let url = URL(string: urlString)
+            var urlString = vm.artworkUrl,
+            var url = URL(string: urlString)
         else {
-            artworkImageView.image = UIImage(systemName: "music.note")
+            artworkImageView.image = DSIcon.template(DSIcon.Name.musicNote, size: .m)
+            artworkImageView.tintColor = DS.Colors.textSecondary
             return
         }
 
-        artworkImageView.image = UIImage(systemName: "photo")
+        artworkImageView.image = DSIcon.template(DSIcon.Name.photo, size: .m)
+        artworkImageView.tintColor = DS.Colors.textSecondary
 
-        guard let imageLoader else { return }
+        guard var imageLoader else { return }
 
         imageTask = Task { @MainActor in
             do {
-                let image = try await imageLoader.loadImage(url: url)
+                var image = try await imageLoader.loadImage(url: url)
                 artworkImageView.image = image
+                artworkImageView.tintColor = nil
             } catch {
             }
         }
@@ -85,20 +88,20 @@ final class AlbumCell: UITableViewCell {
         contentView.addSubview(subtitleLabel)
 
         NSLayoutConstraint.activate([
-            artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            artworkImageView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -10),
-            artworkImageView.widthAnchor.constraint(equalToConstant: 56),
-            artworkImageView.heightAnchor.constraint(equalToConstant: 56),
+            artworkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: DS.Spacing.m),
+            artworkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: DS.Layout.AlbumCell.verticalInset),
+            artworkImageView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -DS.Layout.AlbumCell.verticalInset),
+            artworkImageView.widthAnchor.constraint(equalToConstant: DS.Layout.AlbumCell.artworkSize),
+            artworkImageView.heightAnchor.constraint(equalToConstant: DS.Layout.AlbumCell.artworkSize),
 
-            titleLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            titleLabel.leadingAnchor.constraint(equalTo: artworkImageView.trailingAnchor, constant: DS.Layout.AlbumCell.textHorizontalGap),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -DS.Spacing.m),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: DS.Layout.AlbumCell.verticalInset),
 
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             subtitleLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            subtitleLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -12)
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: DS.Spacing.xs),
+            subtitleLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -DS.Layout.AlbumCell.verticalInset)
         ])
     }
 }

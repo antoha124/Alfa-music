@@ -65,10 +65,10 @@ final class TrackDetailViewController: UIViewController, TrackDetailView {
 
             messageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             messageLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            messageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            messageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: DS.Layout.TrackDetail.stateHorizontalInset),
+            messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -DS.Layout.TrackDetail.stateHorizontalInset),
 
-            retryButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 12),
+            retryButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: DS.Layout.TrackDetail.retryTopSpacing),
             retryButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
 

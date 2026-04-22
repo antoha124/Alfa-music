@@ -12,6 +12,8 @@ class CatalogCoordinator: Coordinator, CatalogCoordinatorProtocol {
     }
 
     func start() {
+        navigationController.setNavigationBarHidden(false, animated: true)
+
         let networkClient: NetworkClient = URLSessionNetworkClient()
         let repository: CatalogRepositoryProtocol = CatalogRepository(networkClient: networkClient)
         let service: CatalogServiceProtocol = CatalogService(repo: repository)
@@ -29,7 +31,10 @@ class CatalogCoordinator: Coordinator, CatalogCoordinatorProtocol {
     func showTracks(albumId: String) {
         let tracksCoordinator = TrackDetailCoordinator(
             navigationController: navigationController,
-            albumId: albumId
+            albumId: albumId,
+            onFinish: { [weak self] in
+                self?.childCoordinator = nil
+            }
         )
         childCoordinator = tracksCoordinator
         tracksCoordinator.start()
