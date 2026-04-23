@@ -1,0 +1,34 @@
+{
+  "root": {
+    "id": "catalog_loading_root",
+    "type": "scroll",
+    "content": {
+      "spacing": "m",
+      "padding": "m",
+      "backgroundColor": "background"
+    },
+    "subviews": [
+      {
+        "id": "catalog_loading_title",
+        "type": "label",
+        "content": {
+          "text": "Каталог",
+          "textStyle": "titleLarge",
+          "color": "textPrimary",
+          "alignment": "left",
+          "numberOfLines": 0
+        }
+      },
+      {
+        "id": "catalog_loading_state",
+        "type": "state",
+        "content": {
+          "style": "loading",
+          "title": null,
+          "message": "Загружаем альбомы",
+          "actionTitle": null
+        }
+      }
+    ]
+  }
+}

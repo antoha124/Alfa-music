@@ -1,0 +1,38 @@
+{
+  "root": {
+    "id": "catalog_error_root",
+    "type": "scroll",
+    "content": {
+      "spacing": "m",
+      "padding": "m",
+      "backgroundColor": "background"
+    },
+    "subviews": [
+      {
+        "id": "catalog_error_title",
+        "type": "label",
+        "content": {
+          "text": "Каталог",
+          "textStyle": "titleLarge",
+          "color": "textPrimary",
+          "alignment": "left",
+          "numberOfLines": 0
+        }
+      },
+      {
+        "id": "catalog_error_state",
+        "type": "state",
+        "content": {
+          "style": "error",
+          "title": "Ошибка",
+          "message": "{{errorMessage}}",
+          "actionTitle": "Повторить"
+        },
+        "action": {
+          "type": "event",
+          "name": "retry"
+        }
+      }
+    ]
+  }
+}

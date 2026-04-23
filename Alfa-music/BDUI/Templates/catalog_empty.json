@@ -1,0 +1,34 @@
+{
+  "root": {
+    "id": "catalog_empty_root",
+    "type": "scroll",
+    "content": {
+      "spacing": "m",
+      "padding": "m",
+      "backgroundColor": "background"
+    },
+    "subviews": [
+      {
+        "id": "catalog_empty_title",
+        "type": "label",
+        "content": {
+          "text": "Каталог",
+          "textStyle": "titleLarge",
+          "color": "textPrimary",
+          "alignment": "left",
+          "numberOfLines": 0
+        }
+      },
+      {
+        "id": "catalog_empty_state",
+        "type": "state",
+        "content": {
+          "style": "empty",
+          "title": "Пока пусто",
+          "message": "{{emptyMessage}}",
+          "actionTitle": null
+        }
+      }
+    ]
+  }
+}
