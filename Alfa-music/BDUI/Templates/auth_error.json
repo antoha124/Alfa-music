@@ -18,8 +18,8 @@
           "actionTitle": "Попробовать снова"
         },
         "action": {
-          "type": "callback",
-          "id": "auth_retry_tap"
+          "type": "event",
+          "name": "retry"
         }
       },
       {
@@ -69,8 +69,8 @@
                   "isEnabled": true
                 },
                 "action": {
-                  "type": "callback",
-                  "id": "auth_login_tap"
+                  "type": "event",
+                  "name": "submit"
                 }
               },
               {
@@ -82,8 +82,8 @@
                   "isEnabled": true
                 },
                 "action": {
-                  "type": "callback",
-                  "id": "auth_guest_tap"
+                  "type": "event",
+                  "name": "alternate"
                 }
               }
             ]

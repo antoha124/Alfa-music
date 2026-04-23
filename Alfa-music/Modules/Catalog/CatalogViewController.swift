@@ -31,19 +31,20 @@ final class CatalogViewController: BDUIScreenHostingViewController, CatalogView 
     }
 
     private func setupCallbacks() {
-        onCallback = { [weak self] callbackID in
+        onAction = { [weak self] action in
             guard let self else { return }
-            if callbackID == "catalog_retry_tap" {
+            guard case let .event(name, payload) = action else { return }
+            switch name {
+            case "retry":
                 viewModel?.didTapRetry()
-                return
-            }
-            if callbackID == "catalog_load_more_tap" {
+            case "paginate":
                 viewModel?.didLoadMore()
-                return
-            }
-            if callbackID.hasPrefix("catalog_open_") {
-                let albumID = String(callbackID.dropFirst("catalog_open_".count))
-                viewModel?.didSelectAlbum(id: albumID)
+            case "select":
+                if let albumID = payload?["itemId"] {
+                    viewModel?.didSelectAlbum(id: albumID)
+                }
+            default:
+                break
             }
         }
     }
@@ -174,8 +175,11 @@ final class CatalogViewController: BDUIScreenHostingViewController, CatalogView 
                 ]
             ],
             "action": [
-                "type": "callback",
-                "id": "catalog_open_\(item.id)"
+                "type": "event",
+                "name": "select",
+                "payload": [
+                    "itemId": item.id
+                ]
             ]
         ]
     }

@@ -23,19 +23,22 @@ final class AuthViewController: BDUIScreenHostingViewController, AuthView {
         super.viewDidLoad()
         title = "Вход"
 
-        onCallback = { [weak self] callbackID in
+        onAction = { [weak self] action in
             guard let self else { return }
-            switch callbackID {
-            case "auth_login_tap":
+            switch action {
+            case .event(let name, _):
+                switch name {
+                case "submit":
                 let email = (renderedView(withID: "auth_email_field") as? DSFormTextField)?.currentText() ?? ""
                 let password = (renderedView(withID: "auth_password_field") as? DSFormTextField)?.currentText() ?? ""
                 viewModel?.didTapLogin(email: email, password: password)
-            case "auth_guest_tap":
-                viewModel?.didTapGuestLogin()
-            case "auth_retry_tap":
-                viewModel?.didLoad()
-            default:
-                break
+                case "alternate":
+                    viewModel?.didTapGuestLogin()
+                case "retry":
+                    viewModel?.didLoad()
+                default:
+                    break
+                }
             }
         }
 

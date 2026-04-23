@@ -45,7 +45,7 @@
         "content": {
           "spacing": "m"
         },
-        "subviews": {{albumNodes}}
+        "subviews": "{{albumNodes}}"
       },
       {
         "id": "catalog_load_more",
@@ -56,8 +56,8 @@
           "isEnabled": true
         },
         "action": {
-          "type": "callback",
-          "id": "catalog_load_more_tap"
+          "type": "event",
+          "name": "paginate"
         }
       }
     ]

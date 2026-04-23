@@ -33,6 +33,9 @@ final class BundleBDUIScreenLoader: BDUIScreenLoading {
         }
 
         context.forEach { key, value in
+            // Allows injecting raw JSON into templates:
+            // "subviews": "{{albumNodes}}" -> "subviews": [ ... ]
+            rawString = rawString.replacingOccurrences(of: "\"{{\(key)}}\"", with: value)
             rawString = rawString.replacingOccurrences(of: "{{\(key)}}", with: value)
         }
 
@@ -55,13 +58,10 @@ protocol BDUIActionHandling: AnyObject {
 
 @MainActor
 final class BDUIActionHandler: BDUIActionHandling {
-    var onCallback: ((String) -> Void)?
+    var onAction: ((BDUIActionDTO) -> Void)?
 
     func handle(_ action: BDUIActionDTO) {
-        switch action {
-        case .callback(let id):
-            onCallback?(id)
-        }
+        onAction?(action)
     }
 }
 

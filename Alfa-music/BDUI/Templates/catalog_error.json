@@ -29,8 +29,8 @@
           "actionTitle": "Повторить"
         },
         "action": {
-          "type": "callback",
-          "id": "catalog_retry_tap"
+          "type": "event",
+          "name": "retry"
         }
       }
     ]

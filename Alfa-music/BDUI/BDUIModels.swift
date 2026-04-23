@@ -1,14 +1,17 @@
 import UIKit
 
 enum BDUIActionDTO: Decodable {
-    case callback(id: String)
+    case event(name: String, payload: [String: String]?)
 
     private enum CodingKeys: String, CodingKey {
         case type
         case id
+        case name
+        case payload
     }
 
     private enum ActionType: String, Decodable {
+        case event
         case callback
     }
 
@@ -16,8 +19,16 @@ enum BDUIActionDTO: Decodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(ActionType.self, forKey: .type)
         switch type {
+        case .event:
+            self = .event(
+                name: try container.decode(String.self, forKey: .name),
+                payload: try container.decodeIfPresent([String: String].self, forKey: .payload)
+            )
         case .callback:
-            self = .callback(id: try container.decode(String.self, forKey: .id))
+            self = .event(
+                name: try container.decode(String.self, forKey: .id),
+                payload: nil
+            )
         }
     }
 }

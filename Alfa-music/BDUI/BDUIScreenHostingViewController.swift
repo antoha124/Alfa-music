@@ -10,9 +10,9 @@ class BDUIScreenHostingViewController: UIViewController {
     private var renderedRootView = UIView()
     private var mappingContext: BDUINodeMappingContext?
 
-    var onCallback: ((String) -> Void)? {
+    var onAction: ((BDUIActionDTO) -> Void)? {
         didSet {
-            actionHandler.onCallback = onCallback
+            actionHandler.onAction = onAction
         }
     }
 

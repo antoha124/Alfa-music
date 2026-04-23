@@ -97,8 +97,8 @@
                   "isEnabled": true
                 },
                 "action": {
-                  "type": "callback",
-                  "id": "auth_login_tap"
+                  "type": "event",
+                  "name": "submit"
                 }
               },
               {
@@ -110,8 +110,8 @@
                   "isEnabled": true
                 },
                 "action": {
-                  "type": "callback",
-                  "id": "auth_guest_tap"
+                  "type": "event",
+                  "name": "alternate"
                 }
               }
             ]
